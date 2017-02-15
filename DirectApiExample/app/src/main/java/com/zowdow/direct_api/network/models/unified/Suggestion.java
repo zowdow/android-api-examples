@@ -10,15 +10,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
-import com.zowdow.direct_api.network.models.unified.suggestions.CardFormat;
-import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
 
 import java.util.ArrayList;
 import java.util.List;
 /**
  * Represents Suggestion
  */
-public class SuggestionDTO implements Parcelable {
+public class Suggestion implements Parcelable {
     @SerializedName("id") private int mId;
     @SerializedName("cardCount") private int mCardCount;
     @SerializedName("suggRank") private int mSuggRank;
@@ -69,19 +67,19 @@ public class SuggestionDTO implements Parcelable {
         dest.writeString(mCardFormat);
     }
 
-    public static final Creator<SuggestionDTO> CREATOR = new Creator<SuggestionDTO>() {
+    public static final Creator<Suggestion> CREATOR = new Creator<Suggestion>() {
         @Override
-        public SuggestionDTO createFromParcel(Parcel source) {
-            return new SuggestionDTO(source);
+        public Suggestion createFromParcel(Parcel source) {
+            return new Suggestion(source);
         }
 
         @Override
-        public SuggestionDTO[] newArray(int size) {
-            return new SuggestionDTO[size];
+        public Suggestion[] newArray(int size) {
+            return new Suggestion[size];
         }
     };
 
-    private SuggestionDTO(Parcel source) {
+    private Suggestion(Parcel source) {
         mId = source.readInt();
         mCardCount = source.readInt();
         mSuggRank = source.readInt();
@@ -94,8 +92,8 @@ public class SuggestionDTO implements Parcelable {
         mCardFormat = source.readString();
     }
 
-    public Suggestion toSuggestion(final String rid, String carouselType, String cardFormat) {
-        Suggestion suggestion = new Suggestion();
+    public com.zowdow.direct_api.network.models.unified.suggestions.Suggestion toSuggestion(final String rid, String carouselType, String cardFormat) {
+        com.zowdow.direct_api.network.models.unified.suggestions.Suggestion suggestion = new com.zowdow.direct_api.network.models.unified.suggestions.Suggestion();
         suggestion.setId(mId);
         suggestion.setRid(rid);
         suggestion.setCarouselType(carouselType);

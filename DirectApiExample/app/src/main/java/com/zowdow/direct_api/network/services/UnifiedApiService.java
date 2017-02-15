@@ -1,7 +1,7 @@
 package com.zowdow.direct_api.network.services;
 
 import com.zowdow.direct_api.network.models.base.BaseResponse;
-import com.zowdow.direct_api.network.models.unified.UnifiedDTO;
+import com.zowdow.direct_api.network.models.unified.UnifiedResponse;
 
 import java.util.Map;
 
@@ -22,7 +22,7 @@ public interface UnifiedApiService {
      * @return
      */
     @GET("unified")
-    Observable<BaseResponse<UnifiedDTO>> loadSuggestions(@QueryMap Map<String, Object> queryMap);
+    Observable<BaseResponse<UnifiedResponse>> loadSuggestions(@QueryMap Map<String, Object> queryMap);
 
     /**
      * Sends tracking call to Unified API.

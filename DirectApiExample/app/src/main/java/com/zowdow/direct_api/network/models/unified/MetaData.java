@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Represents Meta
  */
-public class MetaDTO {
+public class MetaData {
     @SerializedName("rid") private String mRid;
 
     public String getRid() {

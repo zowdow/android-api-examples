@@ -1,15 +1,15 @@
 package com.zowdow.direct_api.network.models.base;
 
 import com.google.gson.annotations.SerializedName;
-import com.zowdow.direct_api.network.models.unified.MetaDTO;
+import com.zowdow.direct_api.network.models.unified.MetaData;
 
 import java.util.List;
 
 public class BaseResponse<T> {
-    @SerializedName("_meta") private MetaDTO mMeta;
+    @SerializedName("_meta") private MetaData mMeta;
     @SerializedName("records") private List<T> mRecords;
 
-    public MetaDTO getMeta() {
+    public MetaData getMeta() {
         return mMeta;
     }
 

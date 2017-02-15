@@ -1,8 +1,15 @@
 package com.zowdow.direct_api.ui;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,18 +28,20 @@ import com.zowdow.direct_api.ZowdowDirectApplication;
 import com.zowdow.direct_api.network.injection.NetworkComponent;
 import com.zowdow.direct_api.network.models.base.BaseResponse;
 import com.zowdow.direct_api.network.models.init.InitResponse;
-import com.zowdow.direct_api.network.models.unified.UnifiedDTO;
+import com.zowdow.direct_api.network.models.unified.UnifiedResponse;
 import com.zowdow.direct_api.network.models.unified.suggestions.CardFormat;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
 import com.zowdow.direct_api.network.services.InitApiService;
 import com.zowdow.direct_api.network.services.UnifiedApiService;
 import com.zowdow.direct_api.ui.adapters.SuggestionsAdapter;
+import com.zowdow.direct_api.utils.PermissionsUtils;
 import com.zowdow.direct_api.utils.QueryUtils;
 import com.zowdow.direct_api.utils.constants.CardFormats;
 import com.zowdow.direct_api.utils.constants.ExtraKeys;
 import com.zowdow.direct_api.utils.location.LocationManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +56,7 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class HomeDemoActivity extends AppCompatActivity {
+    private static final int LOCATION_PERMISSION_RC_CODE = 42;
     private static final String TAG = HomeDemoActivity.class.getSimpleName();
     private static final String DEFAULT_CAROUSEL_TYPE = "stream";
 
@@ -54,6 +64,9 @@ public class HomeDemoActivity extends AppCompatActivity {
     private Integer storedListViewPosition;
     private String currentCardFormat = CardFormats.CARD_FORMAT_INLINE;
     private String currentSearchKeyWord = "";
+    private String[] locationPermissions = new String[] {
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION
+    };
 
     private SuggestionsAdapter suggestionsAdapter;
     private Subscription initApiSubscription;
@@ -78,6 +91,11 @@ public class HomeDemoActivity extends AppCompatActivity {
             currentCardFormat = savedInstanceState.getString(ExtraKeys.EXTRA_RESTORED_CARD_FORMAT);
             currentSearchKeyWord = savedInstanceState.getString(ExtraKeys.EXTRA_RESTORED_SEARCH_KEYWORD);
         }
+
+        if (!(PermissionsUtils.checkCoarseLocationPermission(this) || PermissionsUtils.checkFineLocationPermission(this)) && !apiInitialized) {
+            requestLocationPermissions();
+        }
+
         setupSuggestionsListView();
         initializeApiServices();
         initializeZowdowApi();
@@ -206,7 +224,7 @@ public class HomeDemoActivity extends AppCompatActivity {
      * Processes retrieved raw suggestions into listview's adapter-compatible format.
      * @param suggestionsResponse
      */
-    private void processSuggestionsResponse(BaseResponse<UnifiedDTO> suggestionsResponse) {
+    private void processSuggestionsResponse(BaseResponse<UnifiedResponse> suggestionsResponse) {
         final String rId = suggestionsResponse.getMeta().getRid();
         suggestionsSubscription = Observable.just(suggestionsResponse)
                 .subscribeOn(Schedulers.io())
@@ -278,6 +296,55 @@ public class HomeDemoActivity extends AppCompatActivity {
     private void onCardFormatChanged(@CardFormat String newCardFormat) {
         this.currentCardFormat = newCardFormat;
         findSuggestions(currentSearchKeyWord);
+    }
+
+    private void requestLocationPermissions() {
+        int permissionStatus = PackageManager.PERMISSION_GRANTED;
+        boolean shouldShowRationale = false;
+        for (String permission : locationPermissions) {
+            permissionStatus += ContextCompat.checkSelfPermission(this, permission);
+            shouldShowRationale = shouldShowRationale || ActivityCompat.shouldShowRequestPermissionRationale(this, permission);
+        }
+        if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRationale) {
+                Snackbar.make(findViewById(android.R.id.content), R.string.home_permission_first_warning, Snackbar.LENGTH_INDEFINITE)
+                        .setAction(R.string.home_action_accept, v -> ActivityCompat.requestPermissions(HomeDemoActivity.this, locationPermissions, LOCATION_PERMISSION_RC_CODE)).show();
+            } else {
+                ActivityCompat.requestPermissions(this, locationPermissions, LOCATION_PERMISSION_RC_CODE);
+            }
+        } else {
+            onPermissionsGranted(LOCATION_PERMISSION_RC_CODE);
+        }
+    }
+
+    private void onPermissionsGranted(int requestCode) {
+        if (requestCode == LOCATION_PERMISSION_RC_CODE) {
+            recreate();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        int permissionGrantedStatus = PackageManager.PERMISSION_GRANTED;
+        for (int grantResult : grantResults) {
+            permissionGrantedStatus += grantResult;
+        }
+        if (grantResults.length > 0 && permissionGrantedStatus == PackageManager.PERMISSION_GRANTED) {
+            onPermissionsGranted(requestCode);
+        } else {
+            Snackbar.make(findViewById(android.R.id.content), R.string.home_permission_second_warning, Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.home_action_grant, v -> openAppSettings()).show();
+        }
+    }
+
+    private void openAppSettings() {
+        Intent settingsIntent = new Intent();
+        settingsIntent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        settingsIntent.addCategory(Intent.CATEGORY_DEFAULT);
+        settingsIntent.setData(Uri.parse("package:" + getPackageName()));
+        settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        startActivity(settingsIntent);
     }
 
     @Override

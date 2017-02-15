@@ -9,7 +9,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
-import com.zowdow.direct_api.network.models.unified.ActionDTO;
+import com.zowdow.direct_api.network.models.unified.ActionModel;
+import com.zowdow.direct_api.network.models.unified.Schedule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,33 +21,45 @@ import java.util.List;
 public class Card implements Parcelable {
     public static final float SIZE_MULTIPLIER = 1f;
 
-    @SerializedName("id") private           String          mId;
-    private                                 String          mRid;
-    @SerializedName("x1") private           String          mX1;
-    @SerializedName("x1_h") private         int             mX1h;
-    @SerializedName("x1_w") private         int             mX1w;
-    @SerializedName("x2") private           String          mX2;
-    @SerializedName("x2_h") private         int             mX2h;
-    @SerializedName("x2_w") private         int             mX2w;
-    @SerializedName("x3") private           String          mX3;
-    @SerializedName("x3_h") private         int             mX3h;
-    @SerializedName("x3_w") private         int             mX3w;
-    @SerializedName("x4") private           String          mX4;
-    @SerializedName("x4_h") private         int             mX4h;
-    @SerializedName("x4_w") private         int             mX4w;
-    @SerializedName("D1") private           String          mD1;
-    @SerializedName("D1_h") private         int             mD1h;
-    @SerializedName("D1_w") private         int             mD1w;
-    @SerializedName("D2") private           String          mD2;
-    @SerializedName("D2_h") private         int             mD2h;
-    @SerializedName("D2_w") private         int             mD2w;
-    @SerializedName("cardRank") private     int             mCardRank;
-    @SerializedName("card_format") private  String          mCardFormat;
-    @SerializedName("actions") private      List<ActionDTO> mActions;
-    private                                 boolean         mTracked;
-    private                                 boolean         mGif;
-    @SerializedName("card_impression_url")  private String  mImpressionUrl;
-    @SerializedName("card_click_url")       private String  mClickUrl;
+    private static final String ACTION_PROPERTY_TYPE = "type";
+    private static final String ACTION_PROPERTY_TARGET = "target";
+
+    private static final String SCHEDULE_PROPERTY_START_TIME = "startMs";
+    private static final String SCHEDULE_PROPERTY_END_TIME = "endMs";
+    private static final String SCHEDULE_PROPERTY_VISUAL = "visual";
+    private static final String SCHEDULE_PROPERTY_DAY = "day";
+
+    @SerializedName("id") private           String              mId;
+    private                                 String              mRid;
+    @SerializedName("x1") private           String              mX1;
+    @SerializedName("x1_h") private         int                 mX1h;
+    @SerializedName("x1_w") private         int                 mX1w;
+    @SerializedName("x2") private           String              mX2;
+    @SerializedName("x2_h") private         int                 mX2h;
+    @SerializedName("x2_w") private         int                 mX2w;
+    @SerializedName("x3") private           String              mX3;
+    @SerializedName("x3_h") private         int                 mX3h;
+    @SerializedName("x3_w") private         int                 mX3w;
+    @SerializedName("x4") private           String              mX4;
+    @SerializedName("x4_h") private         int                 mX4h;
+    @SerializedName("x4_w") private         int                 mX4w;
+    @SerializedName("D1") private           String              mD1;
+    @SerializedName("D1_h") private         int                 mD1h;
+    @SerializedName("D1_w") private         int                 mD1w;
+    @SerializedName("D2") private           String              mD2;
+    @SerializedName("D2_h") private         int                 mD2h;
+    @SerializedName("D2_w") private         int                 mD2w;
+    @SerializedName("cardRank") private     int                 mCardRank;
+    @SerializedName("card_format") private  String              mCardFormat;
+    @SerializedName("actions") private      List<ActionModel>     mActions;
+    private                                 boolean             mTracked;
+    private                                 boolean             mGif;
+    @SerializedName("card_impression_url")  private String      mImpressionUrl;
+    @SerializedName("card_click_url")       private String      mClickUrl;
+    @SerializedName("lat")                  private Double      mLatitude;
+    @SerializedName("long")                 private Double      mLongitude;
+    @SerializedName("dist")                 private Double      mDistance;
+    @SerializedName("schedule") private     List<Schedule>   mSchedule;
 
     public Card() {}
 
@@ -426,12 +439,67 @@ public class Card implements Parcelable {
         return mGif;
     }
 
+
+    /**
+     * Returns the latitude coordinate of the spot represented by a card.
+     *
+     * @return the latitude coordinate of the spot represented by a card.
+     */
+    public Double getLatitude() {
+        return mLatitude;
+    }
+
+    /**
+     * Sets the latitude coordinate of the spot represented by a card.
+     *
+     * @param latitude
+     */
+    public void setLatitude(Double latitude) {
+        mLatitude = latitude;
+    }
+
+    /**
+     * Returns the longitude coordinate of the spot represented by a card.
+     *
+     * @return the longitude coordinate of the spot represented by a card.
+     */
+    public Double getLongitude() {
+        return mLongitude;
+    }
+
+    /**
+     * Sets the longitude coordinate of the spot represented by a card.
+     *
+     * @param longitude
+     */
+    public void setLongitude(Double longitude) {
+        mLongitude = longitude;
+    }
+
+    /**
+     * Returns the distance to the spot represented by this card.
+     *
+     * @return the distance to the spot represented by this card.
+     */
+    public Double getDistance() {
+        return mDistance;
+    }
+
+    /**
+     * Sets the distance to the spot represented by this card.
+     *
+     * @param distance
+     */
+    public void setDistance(Double distance) {
+        mDistance = distance;
+    }
+
     /**
      * Get a list of actions for the card
      *
      * @return list of actions for the card
      */
-    public List<ActionDTO> getActions() {
+    public List<ActionModel> getActions() {
         return mActions;
     }
 
@@ -440,7 +508,7 @@ public class Card implements Parcelable {
      *
      * @param actions list of actions for the card
      */
-    public void setActions(List<ActionDTO> actions) {
+    public void setActions(List<ActionModel> actions) {
         mActions = actions;
     }
 
@@ -458,6 +526,24 @@ public class Card implements Parcelable {
 
     public void setClickUrl(String clickUrl) {
         this.mClickUrl = clickUrl;
+    }
+
+    /**
+     * Returns the opening hours schedule for the spot represented by the card.
+     *
+     * @return the opening hours schedule for the spot represented by the card.
+     */
+    public List<Schedule> getSchedule() {
+        return mSchedule;
+    }
+
+    /**
+     * Sets the opening hours schedule for the spot represented by the card.
+     *
+     * @param schedule
+     */
+    public void setSchedule(List<Schedule> schedule) {
+        this.mSchedule = schedule;
     }
 
     @Override
@@ -487,18 +573,37 @@ public class Card implements Parcelable {
         dest.writeString(mD2);
         dest.writeInt(mD2h);
         dest.writeInt(mD2w);
+        if (mLatitude != null) {
+            dest.writeDouble(mLatitude);
+        }
+        if (mLongitude != null) {
+            dest.writeDouble(mLongitude);
+        }
+        if (mDistance != null) {
+            dest.writeDouble(mDistance);
+        }
         dest.writeInt(mCardRank);
         dest.writeString(mCardFormat);
         dest.writeString(mClickUrl);
         dest.writeString(mImpressionUrl);
         JsonArray actions = new JsonArray();
-        for (ActionDTO action : mActions) {
+        for (ActionModel action : mActions) {
             JsonObject jsonAction = new JsonObject();
-            jsonAction.addProperty("type", action.getActionType());
-            jsonAction.addProperty("target", action.getActionTarget());
+            jsonAction.addProperty(ACTION_PROPERTY_TYPE, action.getActionType());
+            jsonAction.addProperty(ACTION_PROPERTY_TARGET, action.getActionTarget());
             actions.add(jsonAction);
         }
         dest.writeString(actions.toString());
+        JsonArray schedule = new JsonArray();
+        for (Schedule dailySchedule : mSchedule) {
+            JsonObject jsonSchedule = new JsonObject();
+            jsonSchedule.addProperty(SCHEDULE_PROPERTY_START_TIME, dailySchedule.getStartMs());
+            jsonSchedule.addProperty(SCHEDULE_PROPERTY_END_TIME, dailySchedule.getEndMs());
+            jsonSchedule.addProperty(SCHEDULE_PROPERTY_VISUAL, dailySchedule.getOpeningHoursString());
+            jsonSchedule.addProperty(SCHEDULE_PROPERTY_DAY, dailySchedule.getDay());
+            schedule.add(jsonSchedule);
+        }
+        dest.writeString(schedule.toString());
     }
 
     /**
@@ -548,7 +653,21 @@ public class Card implements Parcelable {
         JsonArray actions = new JsonParser().parse(source.readString()).getAsJsonArray();
         for (JsonElement jsonElement : actions) {
             JsonObject jsonAction = jsonElement.getAsJsonObject();
-            mActions.add(new ActionDTO(jsonAction.get("target").getAsString(), jsonAction.get("type").getAsString()));
+            mActions.add(new ActionModel(
+                    jsonAction.get(ACTION_PROPERTY_TYPE).getAsString(),
+                    jsonAction.get(ACTION_PROPERTY_TARGET).getAsString()
+            ));
+        }
+        mSchedule = new ArrayList<>();
+        JsonArray schedules = new JsonParser().parse(source.readString()).getAsJsonArray();
+        for (JsonElement jsonElement : schedules) {
+            JsonObject jsonSchedule = jsonElement.getAsJsonObject();
+            mSchedule.add(new Schedule(
+                    jsonSchedule.get(SCHEDULE_PROPERTY_START_TIME).getAsLong(),
+                    jsonSchedule.get(SCHEDULE_PROPERTY_END_TIME).getAsLong(),
+                    jsonSchedule.get(SCHEDULE_PROPERTY_VISUAL).getAsString(),
+                    jsonSchedule.get(SCHEDULE_PROPERTY_DAY).getAsString()
+            ));
         }
     }
 
@@ -564,75 +683,11 @@ public class Card implements Parcelable {
     }
 
     /**
-     * Set values from another card
-     *
-     * @param other Card to copy values from
-     */
-    public void update(Card other) {
-        setId(other.getId());
-        setRid(other.getRid());
-        setX1(other.getX1());
-        setX1w(other.getX1w());
-        setX1h(other.getX1h());
-        setX2(other.getX2());
-        setX2w(other.getX2w());
-        setX2h(other.getX2h());
-        setX3(other.getX3());
-        setX3w(other.getX3w());
-        setX3h(other.getX3h());
-        setX4(other.getX4());
-        setX4w(other.getX4w());
-        setX4h(other.getX4h());
-        setD1(other.getD1());
-        setD1w(other.getD1w());
-        setD1h(other.getD1h());
-        setD2(other.getD2());
-        setD2w(other.getD2w());
-        setD2h(other.getD2h());
-        setCardRank(other.getCardRank());
-        setCardFormat(other.getCardFormat());
-        setActions(other.getActions());
-    }
-
-    /**
      * Returns has the card been tracked
      *
      * @return is Card tracked
      */
     public boolean isTracked() {
         return mTracked;
-    }
-
-    /**
-     * @return card fields as Json string
-     */
-    public String toJson() {
-        JsonObject card = new JsonObject();
-        card.addProperty("id", getId());
-        card.addProperty("cardRank", getCardRank());
-        card.addProperty("card_format", getCardFormat());
-        card.addProperty("x1", getX1());
-        card.addProperty("x1_h", getX1h());
-        card.addProperty("x1_w", getX1w());
-        card.addProperty("x2", getX2());
-        card.addProperty("x2_h", getX2h());
-        card.addProperty("x2_w", getX2w());
-        card.addProperty("x3", getX3());
-        card.addProperty("x3_h", getX3h());
-        card.addProperty("x3_w", getX3w());
-        card.addProperty("x4", getX4());
-        card.addProperty("x4_h", getX4h());
-        card.addProperty("x4_w", getX4w());
-
-        JsonArray actions = new JsonArray();
-        for (ActionDTO actionDTO : getActions()) {
-            JsonObject action = new JsonObject();
-            action.addProperty("action_target", actionDTO.getActionTarget());
-            action.addProperty("action_type", actionDTO.getActionType());
-            actions.add(action);
-        }
-        card.add("actions", actions);
-
-        return card.toString();
     }
 }

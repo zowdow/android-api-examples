@@ -34,9 +34,6 @@ public class QueryUtils {
 
     private static final String DEFAULT_OS              = "Android";
     private static final String MOCK_PACKAGE_NAME       = "com.zowdow.android.example";
-    private static final String MOCK_SDK_VERSION        = "2.0.105";
-    private static final String MOCK_APP_VERSION        = "1.0.218";
-    private static final int    MOCK_APP_CODE           = 218;
 
     private static final Map<String, Object> sQueryMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -58,8 +55,6 @@ public class QueryUtils {
                 final int screenHeight = displayMetrics.heightPixels;
                 final float screenDensity = displayMetrics.densityDpi / DENSITY_M;
 
-                sQueryMap.put(APP_VER, MOCK_APP_VERSION);
-                sQueryMap.put(APP_BUILD, MOCK_APP_CODE);
                 sQueryMap.put(APP_ID, MOCK_PACKAGE_NAME);
                 sQueryMap.put(DEVICE_MODEL, deviceModel);
                 sQueryMap.put(OS, os);
@@ -68,7 +63,6 @@ public class QueryUtils {
                 sQueryMap.put(SCREEN_WIDTH, screenWidth);
                 sQueryMap.put(SCREEN_HEIGHT, screenHeight);
                 sQueryMap.put(SYSTEM_VER, systemVersion);
-                sQueryMap.put(SDK_VER, MOCK_SDK_VERSION);
             }
 
             Location location = LocationManager.get().getLocation(context);

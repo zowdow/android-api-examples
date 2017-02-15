@@ -10,4 +10,12 @@
     <string name="card_type_stamp">Stamp</string>
     <string name="card_type_ticket">Ticket</string>
     <string name="card_type_gif">Gif</string>
+
+    <string name="distance_km">km</string>
+    <string name="distance_miles">mi</string>
+    
+    <string name="home_action_grant">Grant</string>
+    <string name="home_action_accept">Accept</string>
+    <string name="home_permission_first_warning">Please, provide the permission to your current Location.</string>
+    <string name="home_permission_second_warning">Please, accept Location permission to receive more accurate suggestions.</string>
 </resources>
