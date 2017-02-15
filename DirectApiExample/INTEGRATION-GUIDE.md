@@ -149,7 +149,7 @@ If ***tracking*** is set to 1 in the call, then a ***card_click_url*** and a ***
     ]
 }
 ```
-### Return 200 At All Costs
+### Error Handling
 
 Generally, the API returns a 200 every time -- regardless of invalid arguments.  The content may be empty (i.e. no suggestions or cards), but 200 is returned.
 
@@ -167,7 +167,7 @@ Here's the empty content result:
 }
 ```
 
-### Keep It Simple
+### Simple Authentication
 
 Authentication is based on the **app_id**. 
 
