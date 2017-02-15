@@ -27,11 +27,9 @@ import com.zowdow.direct_api.R;
 import com.zowdow.direct_api.ZowdowDirectApplication;
 import com.zowdow.direct_api.network.injection.NetworkComponent;
 import com.zowdow.direct_api.network.models.base.BaseResponse;
-import com.zowdow.direct_api.network.models.init.InitResponse;
 import com.zowdow.direct_api.network.models.unified.UnifiedResponse;
 import com.zowdow.direct_api.network.models.unified.suggestions.CardFormat;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
-import com.zowdow.direct_api.network.services.InitApiService;
 import com.zowdow.direct_api.network.services.UnifiedApiService;
 import com.zowdow.direct_api.ui.adapters.SuggestionsAdapter;
 import com.zowdow.direct_api.utils.PermissionsUtils;
@@ -41,7 +39,6 @@ import com.zowdow.direct_api.utils.constants.ExtraKeys;
 import com.zowdow.direct_api.utils.location.LocationManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +49,6 @@ import butterknife.ButterKnife;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class HomeDemoActivity extends AppCompatActivity {
@@ -60,7 +56,7 @@ public class HomeDemoActivity extends AppCompatActivity {
     private static final String TAG = HomeDemoActivity.class.getSimpleName();
     private static final String DEFAULT_CAROUSEL_TYPE = "stream";
 
-    private boolean apiInitialized;
+    private boolean queryParamsInitialized;
     private Integer storedListViewPosition;
     private String currentCardFormat = CardFormats.CARD_FORMAT_INLINE;
     private String currentSearchKeyWord = "";
@@ -69,11 +65,10 @@ public class HomeDemoActivity extends AppCompatActivity {
     };
 
     private SuggestionsAdapter suggestionsAdapter;
-    private Subscription initApiSubscription;
     private Subscription unifiedApiSubscription;
     private Subscription suggestionsSubscription;
+    private Subscription queryParamsSubscription;
 
-    @Inject InitApiService initApiService;
     @Inject UnifiedApiService unifiedApiService;
 
     @BindView(R.id.suggestion_query_edit_text) EditText suggestionQueryEditText;
@@ -87,18 +82,26 @@ public class HomeDemoActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         if (savedInstanceState != null) {
-            apiInitialized = savedInstanceState.getBoolean(ExtraKeys.EXTRA_API_INITIALIZED);
+            queryParamsInitialized = savedInstanceState.getBoolean(ExtraKeys.EXTRA_DEVICE_ROTATED);
             currentCardFormat = savedInstanceState.getString(ExtraKeys.EXTRA_RESTORED_CARD_FORMAT);
             currentSearchKeyWord = savedInstanceState.getString(ExtraKeys.EXTRA_RESTORED_SEARCH_KEYWORD);
         }
 
-        if (!(PermissionsUtils.checkCoarseLocationPermission(this) || PermissionsUtils.checkFineLocationPermission(this)) && !apiInitialized) {
+        if (!(PermissionsUtils.checkCoarseLocationPermission(this) || PermissionsUtils.checkFineLocationPermission(this)) && !queryParamsInitialized) {
             requestLocationPermissions();
         }
 
+        NetworkComponent networkComponent = ZowdowDirectApplication.getNetworkComponent();
+        networkComponent.inject(this);
+
         setupSuggestionsListView();
-        initializeApiServices();
-        initializeZowdowApi();
+        if (queryParamsInitialized) {
+            startTrackingSuggestionQueries();
+            restoreSuggestions();
+        } else {
+            LocationManager.get().start(this);
+            retrieveApiParams();
+        }
     }
 
     /**
@@ -138,47 +141,26 @@ public class HomeDemoActivity extends AppCompatActivity {
         }
     }
 
-    private void initializeApiServices() {
-        NetworkComponent networkComponent = ZowdowDirectApplication.getNetworkComponent();
-        networkComponent.inject(this);
-    }
-
     /**
-     * Initializes Zowdow API in order to proceed with interacting with Unified API.
-     * If the device was previously rotated and the activity was recreated there is no need
-     * to authorize with Init API again.
+     * Retrieves query params for further interaction with Unified API.
      */
-    private void initializeZowdowApi() {
-        LocationManager.get().start(this);
-        if (apiInitialized) {
-            onApiInitialized();
-            restoreSuggestions();
-        } else {
-            initApiSubscription = QueryUtils.getQueryMapObservable(this)
-                    .subscribeOn(Schedulers.newThread())
-                    .switchMap(new Func1<Map<String, Object>, Observable<InitResponse>>() {
-                        @Override
-                        public Observable<InitResponse> call(Map<String, Object> queryMap) {
-                            return initApiService.init(queryMap);
-                        }
-                    })
-                    .map(InitResponse::getRecords)
-                    .cache()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(records -> {
-                        Log.d(TAG, "Initialization was performed successfully!");
-                        apiInitialized = true;
-                    }, throwable -> Log.e(TAG, "Something went wrong during initialization: " + throwable.getMessage()), this::onApiInitialized);
-        }
+    private void retrieveApiParams() {
+        queryParamsSubscription = QueryUtils.getQueryMapObservable(this)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(queryParams -> {
+                    queryParamsInitialized = true;
+                }, throwable -> {
+                    Log.e(TAG, "Could not generate query params");
+                }, this::startTrackingSuggestionQueries);
     }
 
     /**
-     * This method is invoked when Init API is successfully initialized.
-     * Right after it happened, keyword text field gets enabled, and set to
+     * Sets suggestion query text field enabled, and
      * text change events tracking in order to load suggestions for the defined keyword
      * instantly.
      */
-    public void onApiInitialized() {
+    public void startTrackingSuggestionQueries() {
         suggestionQueryEditText.setEnabled(true);
         suggestionQueryEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -365,21 +347,21 @@ public class HomeDemoActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(ExtraKeys.EXTRA_RECYCLER_VIEW_STATE, ((LinearLayoutManager) suggestionsListView.getLayoutManager()).findFirstCompletelyVisibleItemPosition());
-        outState.putBoolean(ExtraKeys.EXTRA_API_INITIALIZED, apiInitialized);
+        outState.putBoolean(ExtraKeys.EXTRA_DEVICE_ROTATED, queryParamsInitialized);
         outState.putString(ExtraKeys.EXTRA_RESTORED_CARD_FORMAT, currentCardFormat);
         outState.putString(ExtraKeys.EXTRA_RESTORED_SEARCH_KEYWORD, currentSearchKeyWord);
     }
 
     @Override
     protected void onDestroy() {
-        if (initApiSubscription != null && initApiSubscription.isUnsubscribed()) {
-            initApiSubscription.unsubscribe();
-        }
-        if (suggestionsSubscription != null && suggestionsSubscription.isUnsubscribed()) {
+        if (suggestionsSubscription != null && !suggestionsSubscription.isUnsubscribed()) {
             suggestionsSubscription.unsubscribe();
         }
-        if (unifiedApiSubscription != null && unifiedApiSubscription.isUnsubscribed()) {
+        if (unifiedApiSubscription != null && !unifiedApiSubscription.isUnsubscribed()) {
             unifiedApiSubscription.unsubscribe();
+        }
+        if (queryParamsSubscription != null && !queryParamsSubscription.isUnsubscribed()) {
+            queryParamsSubscription.unsubscribe();
         }
         super.onDestroy();
     }

@@ -12,7 +12,6 @@ Current version as of Feb, 7 2017 is 1.0.1.
 ## Overview
 
 This application demonstrates basic interaction with Zowdow AutoSuggest API.
-There are two Zowdow APIs consumed by this client: **Initialization & Unified**.
 More detailed info about their usage is described below, after the Architecture section.
 
 ## Architecture
@@ -29,113 +28,14 @@ mostly represent suggestions, cards & ad listings.
 
 *   **ui** is for Activity classes, adapters, custom views & interfaces with callback-methods.
 There only activity that plays such an important role in application's workflow is `HomeDemoActivity`.
-The key events like Zowdow API initialization & suggestions loading are happening inside this class.
+The key events like Zowdow suggestions loading are happening inside this class.
 `WebViewActivity` and `VideoActivity` just represent the cards' content in master-detail flow: it may be either web-
 and video-content.
 
 *   **utils** contains constants-interfaces, simple utility-classes for geolocation, runtime permissions checks, connectivity state observations, requests parameters collection & formatting
 and other useful stuff.
 
-## Interaction with Initialization API
-
-A simple call to get the app defaults for an app identifier string is enough to start consuming Zowdow API.
-
-**URL Structures**
-
-```
-http://i1.quick1y.com/*/init?app_id=com.example.test
-```
-Any version will respond (v1, v4, v5 whatever).
-
-**The API Arguments**
-
-app_id string is required.
-
-**Response**
-
-JSON is the response type. It comes with an envelope wrapper, so responses will look like this:
-
-```
-curl -XGET 'http://i1.quick1y.com/v1/init?app_id=com.example.test' | python -m json.tool
-
-{
-    "_meta": {
-        "count": 3,
-        "rid": "c29bbb88-b6ca-4f64-cf1b-cf19dfa31665",
-        "status": "SUCCESS",
-        "ttl": 3600
-    },
-    "records": {
-        "app_id": "11",
-        "default_card_format": "inline",
-        "use_cache": true
-    }
-}
-
-```
-**Errors**
-
-Not many actual errors -- Almost every request else returns 200 with an empty set if there is an error.
-
-JSON format like:
-```
-{
-    "_meta": {
-        "count": 0,
-        "rid": "d7e53c5b-ab21-4f78-cf87-07a4e1a06f1b",
-        "status": "SUCCESS",
-        "ttl": 3600
-    },
-    "records": []
-}
-```
-
-**Consuming Init API in this demo app**
-
-The request calls to Init API is provided by `Observable<InitResponse> init(@QueryMap Map<String, Object> queryMap)`
-method inside `InitApiService` interface. FYI: in the following example app RxJava wrapper is used for
-Retrofit-calls.
-
-The basic map of `queryParams` is formed in `QueryUtils` class by `getQueryMapObservable` method.
-Basically, the map (which is emitted by `queryMapObservable` returned by the mentioned method) includes key-value pairs, declared in mentioned utils class, but it may be extended by another ones
-for Unified API needs, which you may find in `Map<String, Object> QueryUtils`'s `createQueryMapForUnifiedApi(Context context, String searchQuery, String currentCardFormat) ` method.
-
-It's quite important to notice that in this app we use hardcoded values for the next keys:
-
-*   **app_id:** we are using the another demo app package name as a value to ensure that the results will be returned to this client in a proper way.
-For now it's `com.zowdow.android.example`.
-*   **app_ver:** Demo app version as a value.
-
-`InitApiService` usage can be reviewed in `HomeDemoActivity` class. This code snippet demonstrates it clearly:
-
-```
-public void initializeZowdowApi() {
-    LocationManager.get().start(this);
-            if (apiInitialized) {
-                onApiInitialized();
-                restoreSuggestions();
-            } else {
-                initApiSubscription = QueryUtils.getQueryMapObservable(this)
-                        .subscribeOn(Schedulers.newThread())
-                        .switchMap(new Func1<Map<String, Object>, Observable<InitResponse>>() {
-                            @Override
-                            public Observable<InitResponse> call(Map<String, Object> queryMap) {
-                                return initApiService.init(queryMap);
-                            }
-                        })
-                        .map(InitResponse::getRecords)
-                        .cache()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(records -> {
-                            Log.d(TAG, "Initialization was performed successfully!");
-                            apiInitialized = true;
-                        }, throwable -> Log.e(TAG, "Something went wrong during initialization: " + throwable.getMessage()), this::onApiInitialized);
-            }
-    }
-}
-```
-
-## Interaction with Unified API ##
+## Interaction with Zowdow API ##
 
 Unified API is the key Zowdow API to interact with in order to retrieve and process autosuggest data.
 In this app's case, it is about search suggestions retrieval by multiple parameters and keywords, defined by developer.
@@ -145,7 +45,7 @@ We implemented `UnifiedApiService` which works with Unified API & some tracking 
 **Base URL for this API**
 
 ```
-https://u1.quick1y.com/v1/
+https://u.zowdow.com/v1/
 ```
 
 All API endpoints constants are available in `network/ApiBaseUrls` interface.

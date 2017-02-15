@@ -2,7 +2,6 @@ package com.zowdow.direct_api.network.injection;
 
 import com.google.gson.GsonBuilder;
 import com.zowdow.direct_api.network.ApiBaseUrls;
-import com.zowdow.direct_api.network.services.InitApiService;
 import com.zowdow.direct_api.network.services.UnifiedApiService;
 import com.zowdow.direct_api.utils.TrackHelper;
 
@@ -11,7 +10,6 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -35,14 +33,6 @@ public class NetworkModule {
                 .client(okHttpClient)
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(new GsonBuilder().serializeSpecialFloatingPointValues().create()));
-    }
-
-    @Provides
-    @Singleton
-    InitApiService provideInitApiService(Retrofit.Builder retrofitBuilder) {
-        return retrofitBuilder
-                .baseUrl(ApiBaseUrls.INIT_API).build()
-                .create(InitApiService.class);
     }
 
     @Provides

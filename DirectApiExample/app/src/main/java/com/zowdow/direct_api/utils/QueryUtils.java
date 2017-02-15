@@ -40,7 +40,7 @@ public class QueryUtils {
     private QueryUtils() {}
 
     /**
-     * Observable with map full of query parameters required for Init & Unified API calls.
+     * Observable with map full of query parameters required for Zowdow API calls.
      * @param context
      * @return
      */

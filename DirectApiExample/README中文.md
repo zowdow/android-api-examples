@@ -24,94 +24,7 @@
 
 *   **utils** 包含常数，简单的地理位置信息获取，运行时间的权限检查，观察网络连接状态，调用参数集合等有用的信息。
 
-## 与初始化（Initialization）API的交互
-
-作为示例，一个简单的调用来获取默认的app数据就足够开始使用API了。
-
-**URL结构**
-
-```
-http://i1.quick1y.com/*/init?app_id=com.example.test
-```
-所有版本都会响应 (v1, v4, v5)。
-
-**API参数**
-
-app_id是必须的。
-
-**返回数据**
-
-返回数据为JSON类型。例子如下：
-
-```
-curl -XGET 'http://i1.quick1y.com/v1/init?app_id=com.example.test' | python -m json.tool
-
-{
-    "_meta": {
-        "count": 3,
-        "rid": "c29bbb88-b6ca-4f64-cf1b-cf19dfa31665",
-        "status": "SUCCESS",
-        "ttl": 3600
-    },
-    "records": {
-        "app_id": "11",
-        "default_card_format": "inline",
-        "use_cache": true
-    }
-}
-
-```
-**错误信息**
-
-如果出错，会返回编码200和一个空集合。
-
-JSON格式为：
-```
-{
-    "_meta": {
-        "count": 0,
-        "rid": "d7e53c5b-ab21-4f78-cf87-07a4e1a06f1b",
-        "status": "SUCCESS",
-        "ttl": 3600
-    },
-    "records": []
-}
-```
-
-**使用Init API**
-
-Init API调用是由`InitApiService`内的`Observable<InitResponse> init(@QueryMap Map<String, Object> queryMap)`方法实现。注意：Retrofit-calls使用了RxJava封装。
-
-`queryParams`的map是由`QueryUtils`类的`createQueryMap`方法来生成的。基本上说，这个map包含了由上面提到的utils类定义的键和键值串，但是为了Unified API的需要，它也可以被拓展，由`Map<String, Object> QueryUtils`的`createQueryMapForUnifiedApi(Context context, String searchQuery, String currentCardFormat) `方法实现。
-
-注意：在此示例程序中，下面的参数是预定义好的固定值。
-
-*   **app_id:** 您的应用id，由我们分配。示例使用的app_id为 `com.searchmaster.searchapp`
-*   **app_ver:** 示例程序版本号
-
-`InitApiService`的用法可在`HomeDemoActivity`类中查找。如下面的代码片段：
-
-```
-public void initializeZowdowApi() {
-    LocationManager.get().start(this);
-    Map<String, Object> initQueryMap = QueryUtils.createQueryMap(this);
-    if (apiInitialized) {
-        onApiInitialized();
-        restoreSuggestions();
-    } else {
-        initApiSubscription = initApiService.init(initQueryMap)
-            .subscribeOn(Schedulers.io())
-            .map(InitResponse::getRecords)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(records -> {
-                Log.d(TAG, "Initialization was performed successfully!");
-                apiInitialized = true;
-            }, throwable -> Log.e(TAG, "Something went wrong during initialization: " + throwable.getMessage()), this::onApiInitialized);
-    }
-}
-```
-
-##与Unified API交互##
+##与Zowdow API交互##
 
 Unified API负责获取和处理搜索推荐数据。在示例程序中，数据通过开发者设置多种参数和关键词来获取。
 
@@ -120,7 +33,7 @@ Unified API负责获取和处理搜索推荐数据。在示例程序中，数据
 **API基URL**
 
 ```
-https://u1.quick1y.com/v1/
+https://u.zowdow.com/v1/
 ```
 
 所有API端点常数都在`network/ApiBaseUrls`中。

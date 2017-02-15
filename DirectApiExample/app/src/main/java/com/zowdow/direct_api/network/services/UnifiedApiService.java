@@ -18,7 +18,7 @@ import rx.Observable;
 public interface UnifiedApiService {
     /**
      * Loads suggestions for a given keyword.
-     * @param queryMap Map of request parameters. Same as for init API + suggestions filtering params.
+     * @param queryMap Map of request parameters incl. suggestions filtering params.
      * @return
      */
     @GET("unified")
