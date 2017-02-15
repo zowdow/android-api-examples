@@ -39,7 +39,7 @@ public class NetworkModule {
     @Singleton
     UnifiedApiService provideUnifiedApiService(Retrofit.Builder retrofitBuilder) {
         return retrofitBuilder
-                .baseUrl(ApiBaseUrls.UNIFIED_API).build()
+                .baseUrl(ApiBaseUrls.ZOWDOW_API).build()
                 .create(UnifiedApiService.class);
     }
 
