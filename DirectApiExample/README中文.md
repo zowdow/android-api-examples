@@ -10,7 +10,7 @@
 
 ## 概括
 
-此示例程序展示了与Zowdow搜索推荐API的基本交互。程序主要使用了**Initialization & Unified**两种API。更多API细节会在下文介绍。
+此示例程序展示了与Zowdow搜索推荐API的基本交互。更多API细节会在下文介绍。
 
 ## 架构
 
@@ -20,7 +20,7 @@
 
 *   **network** 由Retrofit-service类（如上面介绍）和Entity类（代表搜索推荐，卡片和广告）构成。
 
-*   **ui** 被Activity类, adapters, 自定义视图和回调程序。程序工作流程中重要的活动是`HomeDemoActivity`。很多关键的事件比如Zowdow API的初始化和搜索推荐加载都在这个类里发生。`WebViewActivity`和`VideoActivity`代表卡片的内容信息类型，可以是网页，也可以是视频。
+*   **ui** 被Activity类, adapters, 自定义视图和回调程序。程序工作流程中重要的活动是`HomeDemoActivity`。很多关键的事件比如搜索推荐加载都在这个类里发生。`WebViewActivity`和`VideoActivity`代表卡片的内容信息类型，可以是网页，也可以是视频。
 
 *   **utils** 包含常数，简单的地理位置信息获取，运行时间的权限检查，观察网络连接状态，调用参数集合等有用的信息。
 
