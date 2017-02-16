@@ -179,3 +179,26 @@ For each card there is a ***card_click_url*** and a ***card_impression_url*** --
     ]
 }
 ```
+### Error Handling
+
+Generally, the API returns a 200 every time -- regardless of invalid arguments.  The content may be empty (i.e. no suggestions or cards), but 200 is returned.
+
+Here's the empty content result:
+
+```json
+{
+    "_meta": {
+        "count": 0,
+        "rid": "b6edea47-df2c-4c6e-ccf3-92efd2c5dd1a",
+        "status": "SUCCESS",
+        "ttl": 0
+    },
+    "records": []
+}
+```
+
+### Simple Authentication
+
+Authentication is based on the **app_id**. 
+
+Only a valid app_id will return results.
