@@ -59,7 +59,7 @@ There are other parameters that specify the number of suggestions and cards you 
 |:---------|:-----|:-------|
 |***s_limit***|Number of suggestions (max) to return (rows)|10|
 |***c_limit***|Number of cards (max) to return for each suggestion (cards per row)|10|
-|***card_format***|Double-pipe separated list of card formats to return from the set ["stamp", "inline", and "ticket"|inline|
+|***card_format***|Double-pipe separated list of card formats to return from the set ["stamp", "inline", and "ticket"]|inline|
 
 ##Sample Call
 
