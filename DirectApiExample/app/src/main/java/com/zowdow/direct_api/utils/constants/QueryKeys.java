@@ -17,4 +17,5 @@ public interface QueryKeys {
     String CARD_FORMAT       = "card_format";
     String TRACKING          = "tracking";
     String LOCATION_ACCURACY = "location_accuracy";
+    String USER_AGENT        = "ua";
 }
