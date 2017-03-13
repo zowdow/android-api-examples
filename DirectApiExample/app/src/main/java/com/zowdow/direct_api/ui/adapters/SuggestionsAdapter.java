@@ -7,10 +7,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zowdow.direct_api.R;
+import com.zowdow.direct_api.network.injection.DaggerNetworkComponent;
+import com.zowdow.direct_api.network.injection.NetworkComponent;
+import com.zowdow.direct_api.network.models.tracking.CardImpressionTracker;
+import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * Adapter for suggestions list.
@@ -19,16 +25,19 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
     private Context context;
     private List<Suggestion> suggestions;
     private OnCardClickListener cardClickListener;
+    @Inject CardImpressionTracker impressionTracker;
 
     public SuggestionsAdapter(Context context, List<Suggestion> suggestions) {
         this.context = context;
         this.suggestions = new ArrayList<>();
         this.suggestions.addAll(suggestions);
+        DaggerNetworkComponent.builder().build().inject(this);
     }
 
     public SuggestionsAdapter(Context context, List<Suggestion> suggestions, OnCardClickListener cardClickListener) {
         this(context, suggestions);
         this.cardClickListener = cardClickListener;
+        startTrackingCardsStateChange();
     }
 
     @Override
@@ -46,6 +55,14 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
     @Override
     public int getItemCount() {
         return suggestions.size();
+    }
+
+    private void startTrackingCardsStateChange() {
+        List<Card> allCards = new ArrayList<>();
+        for (Suggestion suggestion : suggestions) {
+            allCards.addAll(suggestion.getCards());
+        }
+        impressionTracker.setNewCardImpressionsData(allCards);
     }
 
     public void setSuggestions(List<Suggestion> suggestions) {

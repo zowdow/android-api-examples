@@ -1,4 +1,4 @@
-package com.zowdow.direct_api.utils;
+package com.zowdow.direct_api.utils.tracker;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
