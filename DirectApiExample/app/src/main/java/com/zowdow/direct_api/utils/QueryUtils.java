@@ -7,6 +7,7 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.webkit.WebView;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.ConnectionResult;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.Callable;
 
 import rx.Observable;
 
@@ -41,12 +43,17 @@ public class QueryUtils {
 
     /**
      * Observable with map full of query parameters required for Zowdow API calls.
+     * It is important to retrieve the User-Agent value on the main (UI) thread
+     * and Advertising Device ID on a separate thread.
+     *
      * @param context
      * @return
      */
     public static Observable<Map<String, Object>> getQueryMapObservable(Context context) {
-        return Observable.create(subscriber -> {
-            if (sQueryMap.isEmpty()) {
+        sQueryMap.put(USER_AGENT, getUserAgent(context));
+        return Observable.fromCallable(() -> {
+            // At this point queryMap should contain at least one User-Agent parameter.
+            if (sQueryMap.size() <= 1) {
                 final String os = DEFAULT_OS;
                 final String deviceModel = Build.MANUFACTURER + " " + Build.MODEL;
                 final String systemVersion = Build.VERSION.RELEASE;
@@ -85,8 +92,7 @@ public class QueryUtils {
             sQueryMap.put(TIMEZONE, TimeZone.getDefault().getDisplayName(true, TimeZone.SHORT));
             sQueryMap.put(DEVICE_ID, getDeviceId(context));
 
-            subscriber.onNext(sQueryMap);
-            subscriber.onCompleted();
+            return sQueryMap;
         });
     }
 
@@ -161,6 +167,15 @@ public class QueryUtils {
             e.printStackTrace();
         }
         return "";
+    }
+
+    /**
+     * Get User Agent for ad call URL. Should be called on a main thread only!
+     * @param context
+     * @return user agent string for ad call URL.
+     */
+    private static String getUserAgent(Context context) {
+        return new WebView(context).getSettings().getUserAgentString();
     }
 
     /**

@@ -150,9 +150,8 @@ public class HomeDemoActivity extends AppCompatActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(queryParams -> {
                     queryParamsInitialized = true;
-                }, throwable -> {
-                    Log.e(TAG, "Could not generate query params");
-                }, this::startTrackingSuggestionQueries);
+                }, throwable -> Log.e(TAG, "Could not generate query params: " + throwable.getMessage()),
+                        this::startTrackingSuggestionQueries);
     }
 
     /**
