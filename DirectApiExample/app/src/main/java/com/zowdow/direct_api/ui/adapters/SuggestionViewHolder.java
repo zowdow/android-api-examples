@@ -1,9 +1,12 @@
 package com.zowdow.direct_api.ui.adapters;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -16,6 +19,9 @@ import com.zowdow.direct_api.ui.views.DividerItemDecoration;
 import com.zowdow.direct_api.ui.views.CardImageView;
 import com.zowdow.direct_api.utils.ViewUtils;
 import com.zowdow.direct_api.utils.ImageParams;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -94,10 +100,36 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
                 final int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
                 final int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
                 for (int i = firstVisibleItemPosition; i <= lastVisibleItemPosition; i++) {
-                    View container = recyclerView.getChildAt(i);
+                    CardsAdapter.CardViewHolder cardHolder = (CardsAdapter.CardViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
+                    if (cardHolder == null) {
+                        return;
+                    }
+                    CardView container = cardHolder.cardRootView;
                     if (container != null) {
+                        container.measure(0, 0);
+
+                        // Getting visible area of the card here.
+                        Rect visibleCardRect = new Rect();
+                        container.getGlobalVisibleRect(visibleCardRect);
+
+                        // Fetching the image view instance from a parent view by a given position.
                         CardImageView image = (CardImageView) container.findViewById(R.id.card_image_view);
+
+                        // Calculating width of the visible card area.
+                        float visibleCardWidth = visibleCardRect.right - visibleCardRect.left;
+                        float visibleCardHeight = Math.abs(visibleCardRect.bottom - visibleCardRect.top);
+
+                        float fullCardWidth = container.getMeasuredWidth();
+                        float fullCardHeight = container.getMeasuredHeight();
+
+                        float fullCardArea = fullCardHeight * fullCardWidth;
+                        float visibleCardArea = visibleCardHeight * visibleCardWidth;
+
+                        float visibleCardAreaPercentage = visibleCardArea / fullCardArea;
+
                         image.sendTrackInfo();
+
+                        // Some magic related to card's timer & card's itself state tracking happens here.
                     }
                 }
                 super.onScrolled(recyclerView, dx, dy);
