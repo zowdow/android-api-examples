@@ -29,7 +29,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
     private OnCardClickListener cardClickListener;
     @Inject CardImpressionTracker impressionTracker;
 
-    public SuggestionsAdapter(Context context, List<Suggestion> suggestions) {
+    private SuggestionsAdapter(Context context, List<Suggestion> suggestions) {
         this.context = context;
         this.suggestions = new ArrayList<>();
         this.suggestions.addAll(suggestions);

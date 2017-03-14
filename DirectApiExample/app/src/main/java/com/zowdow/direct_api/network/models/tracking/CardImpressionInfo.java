@@ -10,7 +10,6 @@ class CardImpressionInfo {
     private String cardId;
     private String impressionUrl;
     private boolean isTracked;
-    private boolean isShown;
     private TrackHelper trackHelper;
 
     private CardImpressionInfo(String cardId, String impressionUrl) {
@@ -22,6 +21,7 @@ class CardImpressionInfo {
     CardImpressionInfo(String cardId, String impressionUrl, TrackHelper trackHelper) {
         this(cardId, impressionUrl);
         this.trackHelper = trackHelper;
+        Log.d("CardInfo", "Created card info: " + cardId);
     }
 
     private void startTimer() {
