@@ -23,12 +23,12 @@ import com.zowdow.direct_api.ZowdowDirectApplication;
 import com.zowdow.direct_api.network.models.unified.ActionModel;
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
+import com.zowdow.direct_api.tracking.TrackHelper;
 import com.zowdow.direct_api.ui.VideoActivity;
 import com.zowdow.direct_api.ui.views.CardImageView;
 import com.zowdow.direct_api.utils.ViewUtils;
 import com.zowdow.direct_api.utils.constants.ActionTypes;
 import com.zowdow.direct_api.utils.ImageParams;
-import com.zowdow.direct_api.utils.tracker.TrackHelper;
 import com.zowdow.direct_api.utils.constants.CardFormats;
 import com.zowdow.direct_api.utils.location.LocationManager;
 

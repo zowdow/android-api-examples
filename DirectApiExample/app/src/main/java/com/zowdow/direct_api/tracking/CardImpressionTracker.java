@@ -1,9 +1,8 @@
-package com.zowdow.direct_api.network.models.tracking;
+package com.zowdow.direct_api.tracking;
 
 import android.util.Log;
 
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
-import com.zowdow.direct_api.utils.tracker.TrackHelper;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -3,8 +3,8 @@ package com.zowdow.direct_api.network.injection;
 import com.google.gson.GsonBuilder;
 import com.zowdow.direct_api.network.ApiBaseUrls;
 import com.zowdow.direct_api.network.services.UnifiedApiService;
-import com.zowdow.direct_api.network.models.tracking.CardImpressionTracker;
-import com.zowdow.direct_api.utils.tracker.TrackHelper;
+import com.zowdow.direct_api.tracking.CardImpressionTracker;
+import com.zowdow.direct_api.tracking.TrackHelper;
 
 import javax.inject.Singleton;
 

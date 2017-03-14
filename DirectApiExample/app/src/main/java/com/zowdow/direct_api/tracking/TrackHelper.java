@@ -1,4 +1,4 @@
-package com.zowdow.direct_api.utils.tracker;
+package com.zowdow.direct_api.tracking;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -23,7 +23,7 @@ public class TrackHelper {
         this.unifiedApiService = unifiedApiService;
     }
 
-    public void trackImpression(@NonNull final String impressionUrl) {
+    void trackImpression(@NonNull final String impressionUrl) {
         unifiedApiService.performTracking(impressionUrl).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {

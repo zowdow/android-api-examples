@@ -8,9 +8,9 @@ import android.view.ViewGroup;
 
 import com.zowdow.direct_api.R;
 import com.zowdow.direct_api.ZowdowDirectApplication;
-import com.zowdow.direct_api.network.models.tracking.CardImpressionTracker;
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
+import com.zowdow.direct_api.tracking.CardImpressionTracker;
 
 import java.util.ArrayList;
 import java.util.List;
