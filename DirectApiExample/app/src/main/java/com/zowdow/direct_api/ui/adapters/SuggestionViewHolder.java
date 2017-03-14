@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -41,6 +40,7 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
     private Suggestion currentSuggestion;
     private DividerItemDecoration dividerItemDecoration;
     private OnCardClickListener cardClickListener;
+    private final HashSet<Integer> checkedCardPositionsSet;
 
     @BindView(R.id.root_layout)
     RelativeLayout rootLayout;
@@ -54,6 +54,7 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
         context = itemView.getContext();
         dividerItemDecoration = new DividerItemDecoration();
         layoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
+        checkedCardPositionsSet = new HashSet<>();
         cardClickListener = clickListener;
         ButterKnife.bind(this, itemView);
         ZowdowDirectApplication.getNetworkComponent().inject(this);
@@ -94,22 +95,33 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
 
     @NonNull
     private RecyclerView.OnScrollListener createTrackOnScrollListener() {
-        final HashSet<Integer> checkedCardPositions = new HashSet<>();
-        cardsListView.post(() -> performCardsTracking(checkedCardPositions, cardsListView));
+        performCardsTracking();
         return new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                recyclerView.post(() -> performCardsTracking(checkedCardPositions, recyclerView));
+                performCardsTracking(recyclerView);
                 super.onScrolled(recyclerView, dx, dy);
             }
         };
     }
 
-    private void performCardsTracking(HashSet<Integer> checkedCardPositions, RecyclerView hostRecyclerView) {
+    /**
+     * Starts handling the impression states of all cards' which have been included in this response.
+     */
+    void performCardsTracking() {
+        performCardsTracking(cardsListView);
+    }
+
+    /**
+     * Starts handling the impression states of all cards' which have been included in this response.
+     *
+     * @param hostRecyclerView
+     */
+    private void performCardsTracking(RecyclerView hostRecyclerView) {
         final int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
         final int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
 
-        updateSetOfVisibleCardsPositions(checkedCardPositions, firstVisibleItemPosition, lastVisibleItemPosition);
+        updateSetOfVisibleCardsPositions(firstVisibleItemPosition, lastVisibleItemPosition);
 
         for (int i = 0; i <= cardsAdapter.getItemCount(); i++) {
             CardsAdapter.CardViewHolder cardHolder = (CardsAdapter.CardViewHolder) hostRecyclerView.findViewHolderForAdapterPosition(i);
@@ -120,23 +132,40 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
 
             // Fetching the image view instance from a parent view by a given position.
             CardImageView cardImageView = (CardImageView) container.findViewById(R.id.card_image_view);
-            if (checkedCardPositions.contains(i)) {
-                Log.d("VH", "Card visible: " + i);
+            if (checkedCardPositionsSet.contains(i)) {
                 trackVisibleCard(container, cardImageView);
             } else {
-                Log.d("VH", "Card hidden: " + i);
                 cardImageView.setCardHidden();
             }
         }
     }
 
-    private void updateSetOfVisibleCardsPositions(HashSet<Integer> visibleIndexes, int firstVisiblePos, int lastVisiblePos) {
-        visibleIndexes.clear();
+    /**
+     * Updates set of visible cards positions in a current row.
+     *
+     * @param firstVisiblePos
+     * @param lastVisiblePos
+     */
+    private void updateSetOfVisibleCardsPositions(int firstVisiblePos, int lastVisiblePos) {
+        checkedCardPositionsSet.clear();
         for (int i = firstVisiblePos; i <= lastVisiblePos; i++) {
-            visibleIndexes.add(i);
+            checkedCardPositionsSet.add(i);
         }
     }
 
+    /**
+     * Tries to perform tracking even for the partly (at least, 1 px) visible card.
+     *
+     * If >= 50% card area is visible, it will be marked as shown and if it hasn't been tracked
+     * for this (or previous if the card stayed alive) response, the countdown timer for 1 second
+     * will be launched. As soon as it expires, the impression for this card will be tracked.
+     *
+     * As soon as < 50% of the card area is visible, the timer for its' impression (if it's active)
+     * will be stopped and the impression won't be tracked.
+     *
+     * @param cardRootView
+     * @param cardImageView
+     */
     private void trackVisibleCard(@NonNull View cardRootView, @NonNull CardImageView cardImageView) {
         cardRootView.measure(0, 0);
 

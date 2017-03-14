@@ -6,12 +6,18 @@ import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 import com.zowdow.direct_api.utils.tracker.TrackHelper;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * Class that handles tracking events for each card inside the suggestions list.
+ */
 @Singleton
 public class CardImpressionTracker {
     private Map<String, CardImpressionInfo> cardImpressionInfoMap;
@@ -23,38 +29,78 @@ public class CardImpressionTracker {
         this.trackHelper = trackHelper;
     }
 
+    /**
+     * Updates cards impression objects map with the newly requested ones.
+     * The card impression objects of the new bundle which are similar to the ones from the previous
+     * one are retained and their timers are not cancelled.
+     *
+     * The impression objects associated to the card ids from the previous bundle which are absent
+     * in the current one are removed and all active timers for them get cancelled as they are not
+     * shown on screen.
+     *
+     * @param newCardsList represents the full list of cards from all suggestions for current keyword.
+     */
     public void setNewCardImpressionsData(List<Card> newCardsList) {
-        Map<String, CardImpressionInfo> tempMap = new HashMap<>();
+        // Creating the map full of all cards in this bundle whether some of them (with the same ids) are already shown or not.
+        Map<String, CardImpressionInfo> allNewCardsMap = new HashMap<>();
         for (Card card : newCardsList) {
             String cardId = card.getId();
             CardImpressionInfo cardImpressionInfo = new CardImpressionInfo(cardId, card.getImpressionUrl(), trackHelper);
-            tempMap.put(cardId, cardImpressionInfo);
+            allNewCardsMap.put(cardId, cardImpressionInfo);
         }
-        Map<String, CardImpressionInfo> resultMap = new HashMap<>(cardImpressionInfoMap);
-        resultMap.keySet().retainAll(tempMap.keySet());
-        for (String cardId : cardImpressionInfoMap.keySet()) {
-            if (!resultMap.containsKey(cardId)) {
-                cardImpressionInfoMap.remove(cardId);
+
+        // Defining the set of card ids which were displayed in a previous suggestions/cards bundle and should be kept alive.
+        Set<String> retainedCardsSet = new HashSet<>(cardImpressionInfoMap.keySet());
+        retainedCardsSet.retainAll(allNewCardsMap.keySet());
+
+        // Removing all card impression info instances related to the cards that haven't survived and are not shown.
+        for (Iterator<Map.Entry<String, CardImpressionInfo>> it = cardImpressionInfoMap.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<String, CardImpressionInfo> currentEntry = it.next();
+            if (!retainedCardsSet.contains(currentEntry.getKey())) {
+                it.remove();
             }
         }
-        for (Map.Entry<String, CardImpressionInfo> impressionEntry : cardImpressionInfoMap.entrySet()) {
-            if (!tempMap.containsKey(impressionEntry.getKey())) {
-                cardImpressionInfoMap.put(impressionEntry.getKey(), impressionEntry.getValue());
+
+        // Adding all fresh cards that haven't been shown in a previous suggestions and cards bundle.
+        for (Map.Entry<String, CardImpressionInfo> newCardEntry : allNewCardsMap.entrySet()) {
+            if (!cardImpressionInfoMap.containsKey(newCardEntry.getKey())) {
+                cardImpressionInfoMap.put(newCardEntry.getKey(), newCardEntry.getValue());
             }
         }
     }
 
+    /**
+     * Marks the card with a given identifier as shown. Use this method only in the case
+     * when the visible area of the view which represents this card takes more than a half
+     * of its' full area.
+     *
+     * It makes sense to use this method as soon as onScrolled-event (you
+     * can track such events inside ScrollListeners for LayoutManager-classes)
+     * is invoked as it's quite easy to measure the currently visible list item area immediately.
+     *
+     * @param cardId represents the unique id of the card which state is nbeing handled here.
+     */
     public void setCardShown(String cardId) {
         CardImpressionInfo cardImpressionInfo = cardImpressionInfoMap.get(cardId);
-        Log.d("Tracker", "Setting card shown for: " + cardImpressionInfo);
+        Log.d("Tracker", "Setting card shown: " + cardImpressionInfo);
         if (cardImpressionInfo != null) {
             cardImpressionInfo.cardShown();
         }
     }
 
+    /**
+     * Marks the card with a given identifier as hidden. It is important to call this method
+     * as soon as the card becomes less than 50% visible on screen.
+     *
+     * It makes sense to use this method as soon as onScrolled-event (you
+     * can track such events inside ScrollListeners for LayoutManager-classes)
+     * is invoked as it's quite easy to measure the currently visible list item area immediately.
+     *
+     * @param cardId represents the unique id of the card which state is being handled here.
+     */
     public void setCardHidden(String cardId) {
         CardImpressionInfo cardImpressionInfo = cardImpressionInfoMap.get(cardId);
-        Log.d("Tracker", "Setting card shown for: " + cardImpressionInfo);
+        Log.d("Tracker", "Setting card hidden: " + cardImpressionInfo);
         if (cardImpressionInfo != null) {
             cardImpressionInfo.cardHidden();
         }

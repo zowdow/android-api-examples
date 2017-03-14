@@ -5,8 +5,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -18,7 +16,7 @@ import com.zowdow.direct_api.R;
 public class VideoActivity extends AppCompatActivity {
     public static final String EXTRA_VIDEO = "extra-video";
 
-    private WebView mWvVideo;
+    private WebView videoWebView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -28,19 +26,19 @@ public class VideoActivity extends AppCompatActivity {
         setupViews();
 
         String videoUrl = handleIntent();
-        mWvVideo.loadData(createData(videoUrl), "text/html", "UTF-8");
+        videoWebView.loadData(createData(videoUrl), "text/html", "UTF-8");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mWvVideo.destroy();
+        videoWebView.destroy();
     }
 
     private void setupViews() {
-        mWvVideo = (WebView) findViewById(R.id.wvVideo);
-        mWvVideo.setBackgroundColor(Color.BLACK);
-        WebSettings settings = mWvVideo.getSettings();
+        videoWebView = (WebView) findViewById(R.id.wvVideo);
+        videoWebView.setBackgroundColor(Color.BLACK);
+        WebSettings settings = videoWebView.getSettings();
         settings.setJavaScriptEnabled(true);
     }
 

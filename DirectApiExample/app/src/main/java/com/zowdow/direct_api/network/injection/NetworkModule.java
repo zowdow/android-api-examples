@@ -16,7 +16,7 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Module which provides an access to network services.
+ * Module which provides an access to network-related services which rely on Zowdow API.
  */
 @Module
 public class NetworkModule {

@@ -2,15 +2,12 @@ package com.zowdow.direct_api.ui.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.zowdow.direct_api.R;
 import com.zowdow.direct_api.ZowdowDirectApplication;
-import com.zowdow.direct_api.network.injection.DaggerNetworkComponent;
-import com.zowdow.direct_api.network.injection.NetworkComponent;
 import com.zowdow.direct_api.network.models.tracking.CardImpressionTracker;
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
@@ -25,6 +22,7 @@ import javax.inject.Inject;
  */
 public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolder> {
     private Context context;
+    private RecyclerView parentView;
     private List<Suggestion> suggestions;
     private OnCardClickListener cardClickListener;
     @Inject CardImpressionTracker impressionTracker;
@@ -39,12 +37,12 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
     public SuggestionsAdapter(Context context, List<Suggestion> suggestions, OnCardClickListener cardClickListener) {
         this(context, suggestions);
         this.cardClickListener = cardClickListener;
-        startTrackingCardsStateChange();
     }
 
     @Override
     public SuggestionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(context).inflate(R.layout.item_suggestion, parent, false);
+        parentView = (RecyclerView) parent;
         return new SuggestionViewHolder(itemView, cardClickListener);
     }
 
@@ -59,18 +57,28 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
         return suggestions.size();
     }
 
-    private void startTrackingCardsStateChange() {
+    private void trackCardsStateChange() {
         List<Card> allCards = new ArrayList<>();
         for (Suggestion suggestion : suggestions) {
             allCards.addAll(suggestion.getCards());
         }
         impressionTracker.setNewCardImpressionsData(allCards);
+        updateSuggestionsTrackingState();
+    }
+
+    private void updateSuggestionsTrackingState() {
+        for (int i = 0; i < getItemCount(); i++) {
+            SuggestionViewHolder holder = (SuggestionViewHolder) parentView.findViewHolderForAdapterPosition(i);
+            if (holder != null) {
+                holder.performCardsTracking();
+            }
+        }
     }
 
     public void setSuggestions(List<Suggestion> suggestions) {
         this.suggestions.clear();
         this.suggestions.addAll(suggestions);
         notifyDataSetChanged();
-        startTrackingCardsStateChange();
+        trackCardsStateChange();
     }
 }
