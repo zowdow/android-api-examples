@@ -32,8 +32,16 @@ public class CardImpressionTracker {
         }
         Map<String, CardImpressionInfo> resultMap = new HashMap<>(cardImpressionInfoMap);
         resultMap.keySet().retainAll(tempMap.keySet());
-        cardImpressionInfoMap = resultMap;
-        cardImpressionInfoMap.putAll(tempMap);
+        for (String cardId : cardImpressionInfoMap.keySet()) {
+            if (!resultMap.containsKey(cardId)) {
+                cardImpressionInfoMap.remove(cardId);
+            }
+        }
+        for (Map.Entry<String, CardImpressionInfo> impressionEntry : cardImpressionInfoMap.entrySet()) {
+            if (!tempMap.containsKey(impressionEntry.getKey())) {
+                cardImpressionInfoMap.put(impressionEntry.getKey(), impressionEntry.getValue());
+            }
+        }
     }
 
     public void setCardShown(String cardId) {
