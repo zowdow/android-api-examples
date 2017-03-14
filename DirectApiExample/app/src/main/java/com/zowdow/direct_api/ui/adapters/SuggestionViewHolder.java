@@ -20,8 +20,7 @@ import com.zowdow.direct_api.ui.views.CardImageView;
 import com.zowdow.direct_api.utils.ViewUtils;
 import com.zowdow.direct_api.utils.ImageParams;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,6 +31,7 @@ import butterknife.ButterKnife;
  */
 public class SuggestionViewHolder extends RecyclerView.ViewHolder {
     private static final float SCALE_FACTOR = 1.3f;
+    private static final float MIN_TRACKING_AREA = 0.5f;
     private static final int ITEMS_SPACING = 8;
     private static final int SUGGESTION_HEIGHT = 36;
 
@@ -49,7 +49,7 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
     @BindView(R.id.cards_list_view)
     RecyclerView cardsListView;
 
-    public SuggestionViewHolder(@NonNull View itemView, OnCardClickListener clickListener) {
+    SuggestionViewHolder(@NonNull View itemView, OnCardClickListener clickListener) {
         super(itemView);
         context = itemView.getContext();
         dividerItemDecoration = new DividerItemDecoration();
@@ -59,7 +59,7 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
         ZowdowDirectApplication.getNetworkComponent().inject(this);
     }
 
-    public void setupCarousel(Suggestion currentSuggestion) {
+    void setupCarousel(Suggestion currentSuggestion) {
         this.currentSuggestion = currentSuggestion;
         setupSuggestionView();
         setupCarousel();
@@ -94,46 +94,72 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
 
     @NonNull
     private RecyclerView.OnScrollListener createTrackOnScrollListener() {
+        final HashSet<Integer> checkedCardPositions = new HashSet<>();
+        cardsListView.post(() -> performCardsTracking(checkedCardPositions, cardsListView));
         return new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                final int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-                final int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
-                for (int i = firstVisibleItemPosition; i <= lastVisibleItemPosition; i++) {
-                    CardsAdapter.CardViewHolder cardHolder = (CardsAdapter.CardViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
-                    if (cardHolder == null) {
-                        return;
-                    }
-                    CardView container = cardHolder.cardRootView;
-                    if (container != null) {
-                        container.measure(0, 0);
-
-                        // Getting visible area of the card here.
-                        Rect visibleCardRect = new Rect();
-                        container.getGlobalVisibleRect(visibleCardRect);
-
-                        // Fetching the image view instance from a parent view by a given position.
-                        CardImageView image = (CardImageView) container.findViewById(R.id.card_image_view);
-
-                        // Calculating width of the visible card area.
-                        float visibleCardWidth = visibleCardRect.right - visibleCardRect.left;
-                        float visibleCardHeight = Math.abs(visibleCardRect.bottom - visibleCardRect.top);
-
-                        float fullCardWidth = container.getMeasuredWidth();
-                        float fullCardHeight = container.getMeasuredHeight();
-
-                        float fullCardArea = fullCardHeight * fullCardWidth;
-                        float visibleCardArea = visibleCardHeight * visibleCardWidth;
-
-                        float visibleCardAreaPercentage = visibleCardArea / fullCardArea;
-
-                        image.sendTrackInfo();
-
-                        // Some magic related to card's timer & card's itself state tracking happens here.
-                    }
-                }
+                recyclerView.post(() -> performCardsTracking(checkedCardPositions, recyclerView));
                 super.onScrolled(recyclerView, dx, dy);
             }
         };
+    }
+
+    private void performCardsTracking(HashSet<Integer> checkedCardPositions, RecyclerView hostRecyclerView) {
+        final int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+        final int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
+
+        updateSetOfVisibleCardsPositions(checkedCardPositions, firstVisibleItemPosition, lastVisibleItemPosition);
+
+        for (int i = 0; i <= cardsAdapter.getItemCount(); i++) {
+            CardsAdapter.CardViewHolder cardHolder = (CardsAdapter.CardViewHolder) hostRecyclerView.findViewHolderForAdapterPosition(i);
+            CardView container = (cardHolder != null) ? cardHolder.cardRootView : null;
+            if (container == null) {
+                continue;
+            }
+
+            // Fetching the image view instance from a parent view by a given position.
+            CardImageView cardImageView = (CardImageView) container.findViewById(R.id.card_image_view);
+            if (checkedCardPositions.contains(i)) {
+                Log.d("VH", "Card visible: " + i);
+                trackVisibleCard(container, cardImageView);
+            } else {
+                Log.d("VH", "Card hidden: " + i);
+                cardImageView.setCardHidden();
+            }
+        }
+    }
+
+    private void updateSetOfVisibleCardsPositions(HashSet<Integer> visibleIndexes, int firstVisiblePos, int lastVisiblePos) {
+        visibleIndexes.clear();
+        for (int i = firstVisiblePos; i <= lastVisiblePos; i++) {
+            visibleIndexes.add(i);
+        }
+    }
+
+    private void trackVisibleCard(@NonNull View cardRootView, @NonNull CardImageView cardImageView) {
+        cardRootView.measure(0, 0);
+
+        // Getting visible area of the card here.
+        Rect visibleCardRect = new Rect();
+        cardRootView.getGlobalVisibleRect(visibleCardRect);
+
+        // Calculating width of the visible card area.
+        float visibleCardWidth = visibleCardRect.right - visibleCardRect.left;
+        float visibleCardHeight = Math.abs(visibleCardRect.bottom - visibleCardRect.top);
+
+        float fullCardWidth = cardRootView.getMeasuredWidth();
+        float fullCardHeight = cardRootView.getMeasuredHeight();
+
+        float fullCardArea = fullCardHeight * fullCardWidth;
+        float visibleCardArea = visibleCardHeight * visibleCardWidth;
+
+        float visibleCardAreaPercentage = visibleCardArea / fullCardArea;
+
+        if (visibleCardAreaPercentage >= MIN_TRACKING_AREA) {
+            cardImageView.setCardMostlyVisible();
+        } else {
+            cardImageView.setCardHidden();
+        }
     }
 }
