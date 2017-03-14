@@ -50,6 +50,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
     public void onBindViewHolder(SuggestionViewHolder holder, int position) {
         Suggestion currentSuggestion = suggestions.get(position);
         holder.setupCarousel(currentSuggestion);
+        trackCardsStateChange();
     }
 
     @Override
@@ -57,6 +58,9 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
         return suggestions.size();
     }
 
+    /**
+     * Invalidates suggestions/cards data inside the impression tracker.
+     */
     private void trackCardsStateChange() {
         List<Card> allCards = new ArrayList<>();
         for (Suggestion suggestion : suggestions) {
@@ -66,7 +70,13 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
         updateSuggestionsTrackingState();
     }
 
+    /**
+     * Tracks visible cards that have already been rendered by this adapter.
+     */
     private void updateSuggestionsTrackingState() {
+        if (parentView == null) {
+            return;
+        }
         for (int i = 0; i < getItemCount(); i++) {
             SuggestionViewHolder holder = (SuggestionViewHolder) parentView.findViewHolderForAdapterPosition(i);
             if (holder != null) {

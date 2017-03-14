@@ -82,6 +82,7 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
         cardsListView.setLayoutManager(layoutManager);
         cardsListView.setAdapter(cardsAdapter);
         cardsListView.addOnScrollListener(createTrackOnScrollListener());
+        cardsListView.scrollBy(1, 0);
 
         dividerItemDecoration.setTopBottomPadding(ITEMS_SPACING);
         rootLayout.getLayoutParams().height = getRowHeight(SUGGESTION_HEIGHT + ITEMS_SPACING);
