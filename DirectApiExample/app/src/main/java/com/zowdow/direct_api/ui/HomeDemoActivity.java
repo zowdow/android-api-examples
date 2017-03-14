@@ -207,6 +207,7 @@ public class HomeDemoActivity extends AppCompatActivity {
      */
     private void processSuggestionsResponse(BaseResponse<UnifiedResponse> suggestionsResponse) {
         final String rId = suggestionsResponse.getMeta().getRid();
+        Log.d(TAG, "Processing suggestions response: " + rId);
         suggestionsSubscription = Observable.just(suggestionsResponse)
                 .subscribeOn(Schedulers.io())
                 .flatMapIterable(BaseResponse::getRecords) // converts response wrapper into an iterable list of suggestions
@@ -227,6 +228,7 @@ public class HomeDemoActivity extends AppCompatActivity {
      * @param suggestions
      */
     public void onSuggestionsLoaded(List<Suggestion> suggestions) {
+        Log.d(TAG, "Suggestions loaded: " + suggestions);
         suggestionsAdapter.setSuggestions(suggestions);
         if (suggestions != null && !suggestions.isEmpty()) {
             noItemsPlaceholderTextView.setVisibility(View.GONE);
