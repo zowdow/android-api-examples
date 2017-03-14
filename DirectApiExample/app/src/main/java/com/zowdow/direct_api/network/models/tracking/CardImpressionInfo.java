@@ -1,22 +1,20 @@
 package com.zowdow.direct_api.network.models.tracking;
 
+import android.os.CountDownTimer;
+import android.util.Log;
+
 import com.zowdow.direct_api.utils.tracker.TrackHelper;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 class CardImpressionInfo {
-    private Timer timer;
+    private CountDownTimer timer;
     private String cardId;
     private String impressionUrl;
     private boolean isTracked;
-    private boolean cardShown;
+    private boolean isShown;
     private TrackHelper trackHelper;
 
-    CardImpressionInfo(String cardId, String impressionUrl) {
-        this.timer = new Timer();
+    private CardImpressionInfo(String cardId, String impressionUrl) {
         this.isTracked = false;
-        this.cardShown = false;
         this.cardId = cardId;
         this.impressionUrl = impressionUrl;
     }
@@ -26,42 +24,43 @@ class CardImpressionInfo {
         this.trackHelper = trackHelper;
     }
 
-    void startTimer() {
-        timer.schedule(new TimerTask() {
+    private void startTimer() {
+        Log.d("CardImpr", "Starting timer for card: " + cardId);
+        timer = new CountDownTimer(1000, 1000) {
             @Override
-            public void run() {
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+                Log.d("CardImpr", "Firing timer event for card: " + cardId);
                 trackHelper.trackImpression(impressionUrl);
                 isTracked = true;
+                timer = null;
             }
-        }, 1000, 100);
+        };
+        timer.start();
     }
 
-    void stopTimer() {
-        timer.purge();
+    private void stopTimer() {
+        Log.d("CardImpr", "Stopping timer for card: " + this);
+        if (timer == null) {
+            return;
+        }
         timer.cancel();
-    }
-
-    public String getCardId() {
-        return cardId;
-    }
-
-    public boolean isTracked() {
-        return isTracked;
-    }
-
-    public void setTracked(boolean tracked) {
-        isTracked = tracked;
-    }
-
-    public boolean isCardShown() {
-        return cardShown;
+        timer = null;
     }
 
     void cardShown() {
-        this.cardShown = true;
+        if (!isTracked && timer == null) {
+            startTimer();
+        }
     }
 
     void cardHidden() {
-        this.cardShown = false;
+        if (!isTracked) {
+            stopTimer();
+        }
     }
 }

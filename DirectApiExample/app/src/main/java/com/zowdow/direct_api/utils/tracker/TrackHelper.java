@@ -5,15 +5,20 @@ import android.util.Log;
 
 import com.zowdow.direct_api.network.services.UnifiedApiService;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+@Singleton
 public class TrackHelper {
     private static final String TAG = TrackHelper.class.getSimpleName();
 
     private UnifiedApiService unifiedApiService;
 
+    @Inject
     public TrackHelper(UnifiedApiService unifiedApiService) {
         this.unifiedApiService = unifiedApiService;
     }
@@ -22,7 +27,7 @@ public class TrackHelper {
         unifiedApiService.performTracking(impressionUrl).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                Log.d(TAG, "Tracked impression successfully!");
+                Log.d(TAG, "Tracked impression successfully: " + impressionUrl);
             }
 
             @Override

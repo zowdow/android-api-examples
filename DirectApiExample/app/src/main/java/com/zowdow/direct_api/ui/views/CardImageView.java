@@ -38,29 +38,19 @@ public class CardImageView extends AppCompatImageView {
         super(context, attrs, defStyleAttr);
     }
 
-    @Override
-    public void setImageDrawable(Drawable drawable) {
-        if (drawable != null) {
-            post(() -> {
-                if (currentCard != null && isShown() && !currentCard.hasBeenTracked()) {
-                    track();
-                }
-            });
-        }
-        super.setImageDrawable(drawable);
-    }
-
     public void setTrackInfo(Card card) {
         this.currentCard = card;
     }
 
-    public void sendTrackInfo() {
-        if (currentCard != null && !currentCard.hasBeenTracked()) {
-            track();
+    public void setCardMostlyVisible() {
+        if (currentCard != null) {
+            impressionTracker.setCardShown(currentCard.getId());
         }
     }
 
-    private void track() {
-        trackHelper.trackImpression(currentCard.getImpressionUrl());
+    public void setCardHidden() {
+        if (currentCard != null) {
+            impressionTracker.setCardHidden(currentCard.getId());
+        }
     }
 }

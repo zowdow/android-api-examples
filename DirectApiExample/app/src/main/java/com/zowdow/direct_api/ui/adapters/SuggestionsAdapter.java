@@ -2,11 +2,13 @@ package com.zowdow.direct_api.ui.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.zowdow.direct_api.R;
+import com.zowdow.direct_api.ZowdowDirectApplication;
 import com.zowdow.direct_api.network.injection.DaggerNetworkComponent;
 import com.zowdow.direct_api.network.injection.NetworkComponent;
 import com.zowdow.direct_api.network.models.tracking.CardImpressionTracker;
@@ -31,7 +33,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
         this.context = context;
         this.suggestions = new ArrayList<>();
         this.suggestions.addAll(suggestions);
-        DaggerNetworkComponent.builder().build().inject(this);
+        ZowdowDirectApplication.getNetworkComponent().inject(this);
     }
 
     public SuggestionsAdapter(Context context, List<Suggestion> suggestions, OnCardClickListener cardClickListener) {
@@ -69,5 +71,6 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
         this.suggestions.clear();
         this.suggestions.addAll(suggestions);
         notifyDataSetChanged();
+        startTrackingCardsStateChange();
     }
 }
