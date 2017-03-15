@@ -47,10 +47,10 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import rx.Observable;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class HomeDemoActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_RC_CODE = 42;
@@ -66,9 +66,9 @@ public class HomeDemoActivity extends AppCompatActivity {
     };
 
     private SuggestionsAdapter suggestionsAdapter;
-    private Subscription unifiedApiSubscription;
-    private Subscription suggestionsSubscription;
-    private Subscription queryParamsSubscription;
+    private Disposable unifiedApiSubscription;
+    private Disposable suggestionsSubscription;
+    private Disposable queryParamsSubscription;
 
     @Inject UnifiedApiService unifiedApiService;
 
@@ -368,14 +368,14 @@ public class HomeDemoActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (suggestionsSubscription != null && !suggestionsSubscription.isUnsubscribed()) {
-            suggestionsSubscription.unsubscribe();
+        if (suggestionsSubscription != null && !suggestionsSubscription.isDisposed()) {
+            suggestionsSubscription.dispose();
         }
-        if (unifiedApiSubscription != null && !unifiedApiSubscription.isUnsubscribed()) {
-            unifiedApiSubscription.unsubscribe();
+        if (unifiedApiSubscription != null && !unifiedApiSubscription.isDisposed()) {
+            unifiedApiSubscription.dispose();
         }
-        if (queryParamsSubscription != null && !queryParamsSubscription.isUnsubscribed()) {
-            queryParamsSubscription.unsubscribe();
+        if (queryParamsSubscription != null && !queryParamsSubscription.isDisposed()) {
+            queryParamsSubscription.dispose();
         }
         super.onDestroy();
     }

@@ -24,9 +24,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.concurrent.Callable;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class QueryUtils {
     private static final float DENSITY_M = 160.0f;

@@ -28,7 +28,7 @@ import butterknife.ButterKnife;
  * Vieholder for each suggestion item. Most suggestions contain cards,
  * so RecyclerView for cards is also initialized here.
  */
-public class SuggestionViewHolder extends RecyclerView.ViewHolder {
+class SuggestionViewHolder extends RecyclerView.ViewHolder {
     private static final float SCALE_FACTOR = 1.3f;
     private static final float MIN_TRACKING_AREA = 0.5f;
     private static final int ITEMS_SPACING = 8;

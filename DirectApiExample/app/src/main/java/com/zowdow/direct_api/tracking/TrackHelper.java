@@ -8,6 +8,9 @@ import com.zowdow.direct_api.network.services.UnifiedApiService;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -24,30 +27,18 @@ public class TrackHelper {
     }
 
     void trackImpression(@NonNull final String impressionUrl) {
-        unifiedApiService.performTracking(impressionUrl).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                Log.d(TAG, "Tracked impression successfully: " + impressionUrl);
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Log.e(TAG, "Tracked impression with failure");
-            }
-        });
+        unifiedApiService.performTracking(impressionUrl)
+                .subscribe(
+                        () -> Log.d(TAG, "Tracked impression successfully: " + impressionUrl),
+                        throwable -> Log.e(TAG, "Tracked impression with failure: " + throwable.getMessage())
+                );
     }
 
     public void trackClick(@NonNull final String clickUrl) {
-        unifiedApiService.performTracking(clickUrl).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                Log.d(TAG, "Tracked clicking successfully!");
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Log.e(TAG, "Tracked clicking with failure");
-            }
-        });
+        unifiedApiService.performTracking(clickUrl)
+                .subscribe(
+                        () -> Log.d(TAG, "Tracked clicking successfully!"),
+                        throwable -> Log.e(TAG, "Tracked clicking with failure: " + throwable.getMessage())
+                );
     }
 }
