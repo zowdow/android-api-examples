@@ -22,7 +22,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.zowdow.direct_api.R;
 import com.zowdow.direct_api.ZowdowDirectApplication;
@@ -94,16 +93,15 @@ public class HomeDemoActivity extends AppCompatActivity {
             requestLocationPermissions();
         }
         if (!ConnectivityUtils.isConnected(this)) {
-            Snackbar noConnectionSnackbar = Snackbar.make(rootLayout, R.string.warning_connection_error, Snackbar.LENGTH_INDEFINITE);
-            noConnectionSnackbar.setAction(R.string.label_retry, v -> {
-                setupSuggestionsSearch();
-                noConnectionSnackbar.dismiss();
-            });
-            noConnectionSnackbar.show();
+            showNoConnectionWarning();
         }
 
         setupSuggestionsListView();
         setupSuggestionsSearch();
+    }
+
+    private void showNoConnectionWarning() {
+        Snackbar.make(rootLayout, R.string.warning_connection_error, Snackbar.LENGTH_LONG).show();
     }
 
     /**
@@ -129,8 +127,21 @@ public class HomeDemoActivity extends AppCompatActivity {
         suggestionsAdapter = new SuggestionsAdapter(this, new ArrayList<>(), this::onCardClicked);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         suggestionsListView.setLayoutManager(layoutManager);
+        suggestionsListView.addOnScrollListener(suggestionsScrollListener);
         suggestionsListView.setAdapter(suggestionsAdapter);
     }
+
+    /**
+     * It is important to remember that vertical scroll also matters if it comes to cards impressions
+     * tracking.
+     */
+    private RecyclerView.OnScrollListener suggestionsScrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            suggestionsAdapter.updateSuggestionsTrackingState();
+            super.onScrolled(recyclerView, dx, dy);
+        }
+    };
 
     @Override
     protected void onStart() {
@@ -175,7 +186,7 @@ public class HomeDemoActivity extends AppCompatActivity {
      * instantly.
      */
     public void startTrackingSuggestionQueries() {
-        suggestionQueryEditText.setEnabled(ConnectivityUtils.isConnected(this));
+        suggestionQueryEditText.setEnabled(true);
         suggestionQueryEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -210,8 +221,9 @@ public class HomeDemoActivity extends AppCompatActivity {
         unifiedApiSubscription = unifiedApiService.loadSuggestions(queryMap)
                 .subscribeOn(Schedulers.io())
                 .cache()
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::processSuggestionsResponse, throwable -> {
-                    Toast.makeText(HomeDemoActivity.this, "Could not load suggestions", Toast.LENGTH_SHORT).show();
+                    showNoConnectionWarning();
                     Log.e(TAG, "Could not load suggestions: " + throwable.getMessage());
                 });
     }

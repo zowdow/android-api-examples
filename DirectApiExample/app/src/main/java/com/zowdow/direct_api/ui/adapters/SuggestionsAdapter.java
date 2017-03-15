@@ -73,7 +73,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
     /**
      * Tracks visible cards that have already been rendered by this adapter.
      */
-    private void updateSuggestionsTrackingState() {
+    public void updateSuggestionsTrackingState() {
         if (parentView == null) {
             return;
         }

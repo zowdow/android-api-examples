@@ -1,6 +1,6 @@
 package com.zowdow.direct_api.tracking;
 
-import android.util.Log;
+//import android.util.Log;
 
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 
@@ -56,6 +56,9 @@ public class CardImpressionTracker {
         for (Iterator<Map.Entry<String, CardImpressionInfo>> it = cardImpressionInfoMap.entrySet().iterator(); it.hasNext();) {
             Map.Entry<String, CardImpressionInfo> currentEntry = it.next();
             if (!retainedCardsSet.contains(currentEntry.getKey())) {
+                CardImpressionInfo impressionInfo = currentEntry.getValue();
+                // Marking the card with this id as hidden immediately in order to stop the active timer for it if it keeps ticking.
+                impressionInfo.cardHidden();
                 it.remove();
             }
         }
@@ -81,7 +84,7 @@ public class CardImpressionTracker {
      */
     public void setCardShown(String cardId) {
         CardImpressionInfo cardImpressionInfo = cardImpressionInfoMap.get(cardId);
-        Log.d("Tracker", "Setting card shown: " + cardImpressionInfo);
+        // Log.d("Tracker", "Setting card shown: " + cardImpressionInfo);
         if (cardImpressionInfo != null) {
             cardImpressionInfo.cardShown();
         }
@@ -99,7 +102,7 @@ public class CardImpressionTracker {
      */
     public void setCardHidden(String cardId) {
         CardImpressionInfo cardImpressionInfo = cardImpressionInfoMap.get(cardId);
-        Log.d("Tracker", "Setting card hidden: " + cardImpressionInfo);
+        // Log.d("Tracker", "Setting card hidden: " + cardImpressionInfo);
         if (cardImpressionInfo != null) {
             cardImpressionInfo.cardHidden();
         }
