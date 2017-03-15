@@ -18,6 +18,7 @@ import rx.Observable;
 public interface UnifiedApiService {
     /**
      * Loads suggestions for a given keyword.
+     *
      * @param queryMap Map of request parameters incl. suggestions filtering params.
      * @return
      */
@@ -28,6 +29,7 @@ public interface UnifiedApiService {
      * Sends tracking call to Unified API.
      * Needs to be called when there's some info that needs to be tracked: in case of this demo app,
      * cards' impressions and clicks.
+     *
      * @param urlToTrack
      * @return
      */

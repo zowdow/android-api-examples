@@ -8,8 +8,11 @@ import com.zowdow.direct_api.tracking.TrackHelper;
 import dagger.Module;
 import dagger.Provides;
 
+/**
+ * Module which provides tracking-specific functionality.
+ */
 @Module
-public class TrackingModule {
+class TrackingModule {
     @Provides
     @PerApplication
     TrackHelper provideTrackHelper(UnifiedApiService unifiedApiService) {
