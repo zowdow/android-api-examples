@@ -3,6 +3,7 @@ package com.zowdow.direct_api.tracking;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.zowdow.direct_api.network.models.unified.Schedule;
 import com.zowdow.direct_api.network.services.UnifiedApiService;
 
 import javax.inject.Inject;
@@ -28,17 +29,19 @@ public class TrackHelper {
 
     void trackImpression(@NonNull final String impressionUrl) {
         unifiedApiService.performTracking(impressionUrl)
+                .subscribeOn(Schedulers.io())
                 .subscribe(
                         () -> Log.d(TAG, "Tracked impression successfully: " + impressionUrl),
-                        throwable -> Log.e(TAG, "Tracked impression with failure: " + throwable.getMessage())
+                        Throwable::printStackTrace
                 );
     }
 
     public void trackClick(@NonNull final String clickUrl) {
         unifiedApiService.performTracking(clickUrl)
+                .subscribeOn(Schedulers.io())
                 .subscribe(
-                        () -> Log.d(TAG, "Tracked clicking successfully!"),
-                        throwable -> Log.e(TAG, "Tracked clicking with failure: " + throwable.getMessage())
+                        () -> Log.d(TAG, "Tracked click successfully: " + clickUrl),
+                        Throwable::printStackTrace
                 );
     }
 }
