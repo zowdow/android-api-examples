@@ -19,7 +19,7 @@ public class TrackHelper {
     private UnifiedApiService unifiedApiService;
 
     @Inject
-    public TrackHelper(UnifiedApiService unifiedApiService) {
+    public TrackHelper(@Singleton UnifiedApiService unifiedApiService) {
         this.unifiedApiService = unifiedApiService;
     }
 

@@ -57,7 +57,6 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
         checkedCardPositionsSet = new HashSet<>();
         cardClickListener = clickListener;
         ButterKnife.bind(this, itemView);
-        ZowdowDirectApplication.getNetworkComponent().inject(this);
     }
 
     void setupCarousel(Suggestion currentSuggestion) {

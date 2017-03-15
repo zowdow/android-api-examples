@@ -52,7 +52,7 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.CardViewHold
     @Inject TrackHelper trackHelper;
 
     private CardsAdapter() {
-        ZowdowDirectApplication.getNetworkComponent().inject(this);
+        ZowdowDirectApplication.getTrackingComponent().inject(this);
     }
 
     CardsAdapter(@NonNull Context context, @NonNull Suggestion currentSuggestion, @NonNull List<Card> cards) {

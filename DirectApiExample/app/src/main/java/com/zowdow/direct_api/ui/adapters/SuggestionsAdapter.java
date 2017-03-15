@@ -31,7 +31,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
         this.context = context;
         this.suggestions = new ArrayList<>();
         this.suggestions.addAll(suggestions);
-        ZowdowDirectApplication.getNetworkComponent().inject(this);
+        ZowdowDirectApplication.getTrackingComponent().inject(this);
     }
 
     public SuggestionsAdapter(Context context, List<Suggestion> suggestions, OnCardClickListener cardClickListener) {

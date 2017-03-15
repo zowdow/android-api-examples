@@ -20,18 +20,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zowdow.direct_api.R;
 import com.zowdow.direct_api.ZowdowDirectApplication;
-import com.zowdow.direct_api.network.injection.NetworkComponent;
 import com.zowdow.direct_api.network.models.base.BaseResponse;
 import com.zowdow.direct_api.network.models.unified.UnifiedResponse;
 import com.zowdow.direct_api.network.models.unified.suggestions.CardFormat;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
 import com.zowdow.direct_api.network.services.UnifiedApiService;
 import com.zowdow.direct_api.ui.adapters.SuggestionsAdapter;
+import com.zowdow.direct_api.utils.ConnectivityUtils;
 import com.zowdow.direct_api.utils.PermissionsUtils;
 import com.zowdow.direct_api.utils.QueryUtils;
 import com.zowdow.direct_api.utils.constants.CardFormats;
@@ -71,6 +72,7 @@ public class HomeDemoActivity extends AppCompatActivity {
 
     @Inject UnifiedApiService unifiedApiService;
 
+    @BindView(R.id.root_layout) RelativeLayout rootLayout;
     @BindView(R.id.suggestion_query_edit_text) EditText suggestionQueryEditText;
     @BindView(R.id.suggestions_list_view) RecyclerView suggestionsListView;
     @BindView(R.id.placeholder_text_view) TextView noItemsPlaceholderTextView;
@@ -80,6 +82,7 @@ public class HomeDemoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_demo);
         ButterKnife.bind(this);
+        ZowdowDirectApplication.getNetworkComponent().inject(this);
 
         if (savedInstanceState != null) {
             queryParamsInitialized = savedInstanceState.getBoolean(ExtraKeys.EXTRA_DEVICE_ROTATED);
@@ -90,11 +93,23 @@ public class HomeDemoActivity extends AppCompatActivity {
         if (!(PermissionsUtils.checkCoarseLocationPermission(this) || PermissionsUtils.checkFineLocationPermission(this)) && !queryParamsInitialized) {
             requestLocationPermissions();
         }
-
-        NetworkComponent networkComponent = ZowdowDirectApplication.getNetworkComponent();
-        networkComponent.inject(this);
+        if (!ConnectivityUtils.isConnected(this)) {
+            Snackbar noConnectionSnackbar = Snackbar.make(rootLayout, R.string.warning_connection_error, Snackbar.LENGTH_INDEFINITE);
+            noConnectionSnackbar.setAction(R.string.label_retry, v -> {
+                setupSuggestionsSearch();
+                noConnectionSnackbar.dismiss();
+            });
+            noConnectionSnackbar.show();
+        }
 
         setupSuggestionsListView();
+        setupSuggestionsSearch();
+    }
+
+    /**
+     * Enables suggestions search.
+     */
+    private void setupSuggestionsSearch() {
         if (queryParamsInitialized) {
             startTrackingSuggestionQueries();
             restoreSuggestions();
@@ -160,7 +175,7 @@ public class HomeDemoActivity extends AppCompatActivity {
      * instantly.
      */
     public void startTrackingSuggestionQueries() {
-        suggestionQueryEditText.setEnabled(true);
+        suggestionQueryEditText.setEnabled(ConnectivityUtils.isConnected(this));
         suggestionQueryEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

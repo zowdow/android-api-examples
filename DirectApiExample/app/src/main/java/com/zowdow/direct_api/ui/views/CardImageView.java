@@ -18,11 +18,10 @@ import javax.inject.Inject;
 public class CardImageView extends AppCompatImageView {
     private Card currentCard;
 
-    @Inject TrackHelper trackHelper;
     @Inject CardImpressionTracker impressionTracker;
 
     {
-        ZowdowDirectApplication.getNetworkComponent().inject(this);
+        ZowdowDirectApplication.getTrackingComponent().inject(this);
     }
 
     public CardImageView(Context context) {

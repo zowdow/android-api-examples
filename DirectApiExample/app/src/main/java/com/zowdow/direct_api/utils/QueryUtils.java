@@ -143,7 +143,7 @@ public class QueryUtils {
      */
     private static String getDeviceId(Context context) {
         String deviceId = null;
-        if (isGPServicesAvailable(context)) {
+        if (ConnectivityUtils.isConnected(context) && isGPServicesAvailable(context)) {
             deviceId = getAdvertisingId(context);
             Log.d("QueryUtils", "Ad Device id: " + deviceId);
         }

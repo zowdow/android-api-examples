@@ -1,10 +1,8 @@
-package com.zowdow.direct_api.network.injection;
+package com.zowdow.direct_api.injection;
 
 import com.google.gson.GsonBuilder;
 import com.zowdow.direct_api.network.ApiBaseUrls;
 import com.zowdow.direct_api.network.services.UnifiedApiService;
-import com.zowdow.direct_api.tracking.CardImpressionTracker;
-import com.zowdow.direct_api.tracking.TrackHelper;
 
 import javax.inject.Singleton;
 
@@ -42,17 +40,5 @@ public class NetworkModule {
         return retrofitBuilder
                 .baseUrl(ApiBaseUrls.ZOWDOW_API).build()
                 .create(UnifiedApiService.class);
-    }
-
-    @Provides
-    @Singleton
-    TrackHelper provideTrackHelper(UnifiedApiService unifiedApiService) {
-        return new TrackHelper(unifiedApiService);
-    }
-
-    @Provides
-    @Singleton
-    CardImpressionTracker provideCardImpressionTracker(TrackHelper trackHelper) {
-        return new CardImpressionTracker(trackHelper);
     }
 }
