@@ -66,7 +66,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
         for (Suggestion suggestion : suggestions) {
             allCards.addAll(suggestion.getCards());
         }
-        impressionTracker.setNewCardImpressionsData(allCards);
+        impressionTracker.setNewCardsData(allCards);
         updateSuggestionsTrackingState();
     }
 

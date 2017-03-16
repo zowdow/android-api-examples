@@ -39,7 +39,7 @@ public class CardImpressionTracker {
      *
      * @param newCardsList represents the full list of cards from all suggestions for current keyword.
      */
-    public void setNewCardImpressionsData(List<Card> newCardsList) {
+    public void setNewCardsData(List<Card> newCardsList) {
         // Creating the map full of all cards in this bundle whether some of them (with the same ids) are already shown or not.
         Map<String, CardImpressionInfo> allNewCardsMap = new HashMap<>();
         for (Card card : newCardsList) {
@@ -84,7 +84,7 @@ public class CardImpressionTracker {
      */
     public void setCardShown(String cardId) {
         CardImpressionInfo cardImpressionInfo = cardImpressionInfoMap.get(cardId);
-        // Log.d("Tracker", "Setting card shown: " + cardImpressionInfo);
+        //Log.d("Tracker", "Setting card shown: " + cardImpressionInfo);
         if (cardImpressionInfo != null) {
             cardImpressionInfo.cardShown();
         }
@@ -102,7 +102,7 @@ public class CardImpressionTracker {
      */
     public void setCardHidden(String cardId) {
         CardImpressionInfo cardImpressionInfo = cardImpressionInfoMap.get(cardId);
-        // Log.d("Tracker", "Setting card hidden: " + cardImpressionInfo);
+        //Log.d("Tracker", "Setting card hidden: " + cardImpressionInfo);
         if (cardImpressionInfo != null) {
             cardImpressionInfo.cardHidden();
         }
