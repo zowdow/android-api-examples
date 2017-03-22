@@ -14,7 +14,7 @@ public class ConnectivityUtils {
      * @param context Android Context
      * @return NetworkInfo from system ConnectivityManager
      */
-    public static NetworkInfo getNetworkInfo(Context context) {
+    private static NetworkInfo getNetworkInfo(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo();
     }
@@ -61,7 +61,7 @@ public class ConnectivityUtils {
      * @param context Android Context
      * @return current connection type name
      */
-    public static String getConnectionType(Context context) {
+    static String getConnectionType(Context context) {
         NetworkInfo info = getNetworkInfo(context);
         if (info == null) {
             return "unknown";
@@ -77,7 +77,7 @@ public class ConnectivityUtils {
      * @param subType connection subtype
      * @return connection name for specified type and subtype
      */
-    public static String getConnectionNameByType(int type, int subType) {
+    private static String getConnectionNameByType(int type, int subType) {
         if (type == ConnectivityManager.TYPE_WIFI) {
             return "wifi";
         } else if (type == ConnectivityManager.TYPE_MOBILE) {

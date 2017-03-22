@@ -20,18 +20,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.zowdow.direct_api.R;
 import com.zowdow.direct_api.ZowdowDirectApplication;
-import com.zowdow.direct_api.network.injection.NetworkComponent;
 import com.zowdow.direct_api.network.models.base.BaseResponse;
 import com.zowdow.direct_api.network.models.unified.UnifiedResponse;
 import com.zowdow.direct_api.network.models.unified.suggestions.CardFormat;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
 import com.zowdow.direct_api.network.services.UnifiedApiService;
 import com.zowdow.direct_api.ui.adapters.SuggestionsAdapter;
+import com.zowdow.direct_api.utils.ConnectivityUtils;
 import com.zowdow.direct_api.utils.PermissionsUtils;
 import com.zowdow.direct_api.utils.QueryUtils;
 import com.zowdow.direct_api.utils.constants.CardFormats;
@@ -46,10 +46,10 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import rx.Observable;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class HomeDemoActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_RC_CODE = 42;
@@ -65,12 +65,13 @@ public class HomeDemoActivity extends AppCompatActivity {
     };
 
     private SuggestionsAdapter suggestionsAdapter;
-    private Subscription unifiedApiSubscription;
-    private Subscription suggestionsSubscription;
-    private Subscription queryParamsSubscription;
+    private Disposable unifiedApiSubscription;
+    private Disposable suggestionsSubscription;
+    private Disposable queryParamsSubscription;
 
     @Inject UnifiedApiService unifiedApiService;
 
+    @BindView(R.id.root_layout) RelativeLayout rootLayout;
     @BindView(R.id.suggestion_query_edit_text) EditText suggestionQueryEditText;
     @BindView(R.id.suggestions_list_view) RecyclerView suggestionsListView;
     @BindView(R.id.placeholder_text_view) TextView noItemsPlaceholderTextView;
@@ -80,6 +81,7 @@ public class HomeDemoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_demo);
         ButterKnife.bind(this);
+        ZowdowDirectApplication.getNetworkComponent().inject(this);
 
         if (savedInstanceState != null) {
             queryParamsInitialized = savedInstanceState.getBoolean(ExtraKeys.EXTRA_DEVICE_ROTATED);
@@ -90,11 +92,22 @@ public class HomeDemoActivity extends AppCompatActivity {
         if (!(PermissionsUtils.checkCoarseLocationPermission(this) || PermissionsUtils.checkFineLocationPermission(this)) && !queryParamsInitialized) {
             requestLocationPermissions();
         }
-
-        NetworkComponent networkComponent = ZowdowDirectApplication.getNetworkComponent();
-        networkComponent.inject(this);
+        if (!ConnectivityUtils.isConnected(this)) {
+            showNoConnectionWarning();
+        }
 
         setupSuggestionsListView();
+        setupSuggestionsSearch();
+    }
+
+    private void showNoConnectionWarning() {
+        Snackbar.make(rootLayout, R.string.warning_connection_error, Snackbar.LENGTH_LONG).show();
+    }
+
+    /**
+     * Enables suggestions search.
+     */
+    private void setupSuggestionsSearch() {
         if (queryParamsInitialized) {
             startTrackingSuggestionQueries();
             restoreSuggestions();
@@ -114,8 +127,21 @@ public class HomeDemoActivity extends AppCompatActivity {
         suggestionsAdapter = new SuggestionsAdapter(this, new ArrayList<>(), this::onCardClicked);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         suggestionsListView.setLayoutManager(layoutManager);
+        suggestionsListView.addOnScrollListener(suggestionsScrollListener);
         suggestionsListView.setAdapter(suggestionsAdapter);
     }
+
+    /**
+     * It is important to remember that vertical scroll also matters if it comes to cards impressions
+     * tracking.
+     */
+    private RecyclerView.OnScrollListener suggestionsScrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            suggestionsAdapter.updateSuggestionsTrackingState();
+            super.onScrolled(recyclerView, dx, dy);
+        }
+    };
 
     @Override
     protected void onStart() {
@@ -195,8 +221,9 @@ public class HomeDemoActivity extends AppCompatActivity {
         unifiedApiSubscription = unifiedApiService.loadSuggestions(queryMap)
                 .subscribeOn(Schedulers.io())
                 .cache()
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::processSuggestionsResponse, throwable -> {
-                    Toast.makeText(HomeDemoActivity.this, "Could not load suggestions", Toast.LENGTH_SHORT).show();
+                    showNoConnectionWarning();
                     Log.e(TAG, "Could not load suggestions: " + throwable.getMessage());
                 });
     }
@@ -355,14 +382,14 @@ public class HomeDemoActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (suggestionsSubscription != null && !suggestionsSubscription.isUnsubscribed()) {
-            suggestionsSubscription.unsubscribe();
+        if (suggestionsSubscription != null && !suggestionsSubscription.isDisposed()) {
+            suggestionsSubscription.dispose();
         }
-        if (unifiedApiSubscription != null && !unifiedApiSubscription.isUnsubscribed()) {
-            unifiedApiSubscription.unsubscribe();
+        if (unifiedApiSubscription != null && !unifiedApiSubscription.isDisposed()) {
+            unifiedApiSubscription.dispose();
         }
-        if (queryParamsSubscription != null && !queryParamsSubscription.isUnsubscribed()) {
-            queryParamsSubscription.unsubscribe();
+        if (queryParamsSubscription != null && !queryParamsSubscription.isDisposed()) {
+            queryParamsSubscription.dispose();
         }
         super.onDestroy();
     }

@@ -1,9 +1,7 @@
-package com.zowdow.direct_api.network.models.tracking;
+package com.zowdow.direct_api.tracking;
 
 import android.os.CountDownTimer;
 import android.util.Log;
-
-import com.zowdow.direct_api.tracking.TrackHelper;
 
 /**
  * Class represents the entity associated to each specific card in a current suggestions response

@@ -11,7 +11,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.zowdow.direct_api.R;
-import com.zowdow.direct_api.ZowdowDirectApplication;
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
 import com.zowdow.direct_api.ui.views.DividerItemDecoration;
@@ -28,9 +27,12 @@ import butterknife.ButterKnife;
  * Vieholder for each suggestion item. Most suggestions contain cards,
  * so RecyclerView for cards is also initialized here.
  */
-public class SuggestionViewHolder extends RecyclerView.ViewHolder {
-    private static final float SCALE_FACTOR = 1.3f;
+class SuggestionViewHolder extends RecyclerView.ViewHolder {
     private static final float MIN_TRACKING_AREA = 0.5f;
+    // We define 1.1f and not exactly 1.0f here because of extra pixels which may be added by decoration layouts
+    private static final float MAX_TRACKING_AREA = 1.1f;
+
+    private static final float SCALE_FACTOR = 1.3f;
     private static final int ITEMS_SPACING = 8;
     private static final int SUGGESTION_HEIGHT = 36;
 
@@ -57,7 +59,6 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
         checkedCardPositionsSet = new HashSet<>();
         cardClickListener = clickListener;
         ButterKnife.bind(this, itemView);
-        ZowdowDirectApplication.getNetworkComponent().inject(this);
     }
 
     void setupCarousel(Suggestion currentSuggestion) {
@@ -82,6 +83,7 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
         cardsListView.setLayoutManager(layoutManager);
         cardsListView.setAdapter(cardsAdapter);
         cardsListView.addOnScrollListener(createTrackOnScrollListener());
+        cardsListView.scrollBy(5, 0);
 
         dividerItemDecoration.setTopBottomPadding(ITEMS_SPACING);
         rootLayout.getLayoutParams().height = getRowHeight(SUGGESTION_HEIGHT + ITEMS_SPACING);
@@ -173,19 +175,21 @@ public class SuggestionViewHolder extends RecyclerView.ViewHolder {
         Rect visibleCardRect = new Rect();
         cardRootView.getGlobalVisibleRect(visibleCardRect);
 
-        // Calculating width of the visible card area.
+        // Calculating width and height of the visible card area.
         float visibleCardWidth = visibleCardRect.right - visibleCardRect.left;
         float visibleCardHeight = Math.abs(visibleCardRect.bottom - visibleCardRect.top);
 
         float fullCardWidth = cardRootView.getMeasuredWidth();
         float fullCardHeight = cardRootView.getMeasuredHeight();
 
+        // Calculating the full area of this card.
         float fullCardArea = fullCardHeight * fullCardWidth;
         float visibleCardArea = visibleCardHeight * visibleCardWidth;
 
         float visibleCardAreaPercentage = visibleCardArea / fullCardArea;
 
-        if (visibleCardAreaPercentage >= MIN_TRACKING_AREA) {
+        // Invalidating card's impression state depending on its currently visible area.
+        if (visibleCardAreaPercentage >= MIN_TRACKING_AREA && visibleCardAreaPercentage <= MAX_TRACKING_AREA) {
             cardImageView.setCardMostlyVisible();
         } else {
             cardImageView.setCardHidden();

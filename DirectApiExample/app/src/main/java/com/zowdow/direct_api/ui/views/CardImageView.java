@@ -1,14 +1,13 @@
 package com.zowdow.direct_api.ui.views;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 
 import com.zowdow.direct_api.ZowdowDirectApplication;
-import com.zowdow.direct_api.network.models.tracking.CardImpressionTracker;
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
-import com.zowdow.direct_api.utils.tracker.TrackHelper;
+import com.zowdow.direct_api.tracking.CardImpressionTracker;
+import com.zowdow.direct_api.tracking.TrackHelper;
 
 import javax.inject.Inject;
 
@@ -19,11 +18,10 @@ import javax.inject.Inject;
 public class CardImageView extends AppCompatImageView {
     private Card currentCard;
 
-    @Inject TrackHelper trackHelper;
     @Inject CardImpressionTracker impressionTracker;
 
     {
-        ZowdowDirectApplication.getNetworkComponent().inject(this);
+        ZowdowDirectApplication.getTrackingComponent().inject(this);
     }
 
     public CardImageView(Context context) {

@@ -8,9 +8,9 @@ import android.view.ViewGroup;
 
 import com.zowdow.direct_api.R;
 import com.zowdow.direct_api.ZowdowDirectApplication;
-import com.zowdow.direct_api.network.models.tracking.CardImpressionTracker;
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
+import com.zowdow.direct_api.tracking.CardImpressionTracker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
         this.context = context;
         this.suggestions = new ArrayList<>();
         this.suggestions.addAll(suggestions);
-        ZowdowDirectApplication.getNetworkComponent().inject(this);
+        ZowdowDirectApplication.getTrackingComponent().inject(this);
     }
 
     public SuggestionsAdapter(Context context, List<Suggestion> suggestions, OnCardClickListener cardClickListener) {
@@ -50,6 +50,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
     public void onBindViewHolder(SuggestionViewHolder holder, int position) {
         Suggestion currentSuggestion = suggestions.get(position);
         holder.setupCarousel(currentSuggestion);
+        trackCardsStateChange();
     }
 
     @Override
@@ -57,16 +58,25 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionViewHolde
         return suggestions.size();
     }
 
+    /**
+     * Invalidates suggestions/cards data inside the impression tracker.
+     */
     private void trackCardsStateChange() {
         List<Card> allCards = new ArrayList<>();
         for (Suggestion suggestion : suggestions) {
             allCards.addAll(suggestion.getCards());
         }
-        impressionTracker.setNewCardImpressionsData(allCards);
+        impressionTracker.setNewCardsData(allCards);
         updateSuggestionsTrackingState();
     }
 
-    private void updateSuggestionsTrackingState() {
+    /**
+     * Tracks visible cards that have already been rendered by this adapter.
+     */
+    public void updateSuggestionsTrackingState() {
+        if (parentView == null) {
+            return;
+        }
         for (int i = 0; i < getItemCount(); i++) {
             SuggestionViewHolder holder = (SuggestionViewHolder) parentView.findViewHolderForAdapterPosition(i);
             if (holder != null) {

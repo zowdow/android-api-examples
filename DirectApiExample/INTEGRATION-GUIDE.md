@@ -1,58 +1,88 @@
-### Getting Started - Zowdow Suggestion API
+# Getting Started with the Zowdow Suggestion API
 
-This is a brief summary of the Zowdow Suggestion API.  The basic purpose of the API is to provide very fast keyword and card suggestions based on a query fragment that a user has typed in for auto-suggest.  The API can also be used in a non-fragment sense -- just send an entire keyword as the argument to see the suggested related keywords and their content.
+This is a brief summary of the Zowdow Suggestion API.  The purpose of the API is to provide  keyword and card suggestions based on a query fragment that a user has typed in for auto-suggest.  
 
-The endpoint of the Suggestions API is:
-```
-u.zowdow.com/v1/unified
-```
+The API can also be used in a non-fragment sense -- just send an entire keyword as the argument to see the suggested related keywords and their content.
 
-The API supports many parameters that are used to customize the keywords and cards returned.  **The API will return no content unless the required parameters are provided.**  The **required** parameters for an API call are:
-  * ***app_id*** -- the app name calling the API, and
-  * ***q*** -- the query (fragment or a whole phrase/keyword)
-  * ***device_id*** -- a unique identifier for the client device such as IDFA or Advertising Identifier or android id
-  * ***os*** -- the operating system of the device (android|ios|windows|blackberry)
-  * ***device_model*** -- the model name for the user's device
-  * ***system_ver*** -- the verion number for the os (a string)
-  * ***network*** -- the type of network the device is connected to (4G|3G|wifi|...)
-  * ***locale*** -- used to set the language settings for cards
-  * ***timezone*** -- used for time of day calculations (morning/afternoon/evening) for card selection
-  * ***tracking*** -- set to 1 if you want impression and click URLs for each card.  Perform a get on these URLS respectively if the card is shown (impression) or clicked on (click).
+The endpoint of the API is:  
+
+https://u.zowdow.com/v1/unified
+
+The API supports many parameters that are used to customize the keywords and cards returned.
+
+**Please Note:**
+
+**The API will return no content unless the required parameters are provided.**  In general, the more information that is provided, the better the user experience (content is tuned for the user), as well as the monetization.
+
+###Required Parameters
+
+The **required** parameters for an API call are:
+
+| Parameter | Value | Use |
+|:---------|:-----|:----|
+|***app_id***|The Zowdow-assigned identifier for your application|Settings for the specific content, countries, card types for you application|
+|***q***|The query (or fragment of a query)|The keywords returned will be related to this query or query fragment.|
+|***device_id***|The IDFA (iOS) Advertiser ID (Android) or Android ID|Customizing content for the individual user as well as presenting device targeted ads|
+
+###Recommended Parameters
+
+The **recommended** parameters are as follows:
+
+| Parameter | Value | Use |
+|:---------|:-----|:----|
+|***os***|android,ios,windows|Content tuning for the device platform|
+|***device_model***|Detailed device model number|Useful for device type content targeting|
+|***system_ver***|System software version number|Also useful for content targeting|
+|***network***|wifi,4g,3g,...|For content targeting|
+|***locale***|Default locale for the device|For setting language content preferences|
+|***timezone***|Standard TZ values|For daily/time of day optimization|
+|***lat***|Latitude of the device|Needed for local content|
+|***long***|Longitude of the device|Needed for local content|
+|***location_accuracy***|Meters resolution for the device lat/long|For local content targeting|
   
-The next set of important parameters define the client location, and include:
-* ***lat*** and ***long*** -- latitude and longitude of the client (both floats).  These values are needed if any local content (i.e. cards about some specific location like nearby businesses, events, etc.) is to be served.  Without the lat & long -- only global content is served, limiting the coverage of cards and keywords.
-* ***location_accuracy*** -- Meters of accuracy of the latitude and longitude
+###Reporting Parameters
 
-There are some other parameters that help in content selection:
-* ***app_ver*** -- application version
-* ***app_build*** -- build version of app
-* ***screen_scale*** -- screen resolution in points (1x, 2x, 3x, 4x)
-* ***keyboard*** -- Name of currently active keyboard
+There are some other parameters that can be used (if desired) for reporting traffic and results effectiveness:
+
+| Parameter | Value |
+|:---------|:-----|
+|***app_ver***|Application version|
+|***app_build***|Build version|
+|***screen_scale***|1x,2x,3x,4x,5x...|
+|***keyboard***|Name of the active keyboard|
+
+###Limit & Selection Parameters
 
 There are other parameters that specify the number of suggestions and cards you want for each suggestion, namely:
-* ***s_limit*** -- the number of keyword suggestions (default is 10)
-* ***c_limit*** -- the number of cards (max) for each keyword suggestion (default is 10)
+
+| Parameter | Value | Default |
+|:---------|:-----|:-------|
+|***s_limit***|Number of suggestions (max) to return (rows)|10|
+|***c_limit***|Number of cards (max) to return for each suggestion (cards per row)|10|
+|***card_format***|Double-pipe separated list of card formats to return from the set ["stamp", "inline", and "ticket"]|inline|
+
+##Sample Call
 
 Testing with curl, here's an example call and response:
 
-```json
-curl -XGET 'http://localhost:8880/v1/unified?app_id=com.zowdow.android.example&q=black&device_id=8de95467-1570-45bf-9732-178f3f80d3e6&os=Android&device_model=HUAWEI+VIE-L09&system_ver=6.0&network=wifi&locale=en_US&timezone=EDT&tracking=1&lat=32.79317&lon=-115.55478&location_accuracy=100&s_limit=2&c_limit=1'
-```
+**curl -XGET 'http://u.zowdow.com/v1/unified?app_id=com.zowdow.android.example&q=black&device_id=8de95467-1570-45bf-9732-178f3f80d3e6&os=Android&device_model=HUAWEI+VIE-L09&system_ver=6.0&network=wifi&locale=en_US&timezone=EDT&lat=32.79317&lon=-115.55478&location_accuracy=100&s_limit=2&c_limit=1'**
 
-The response will be the json payload of the suggestions and cards.  The ***_meta*** section returns information about the entire set of suggestions (count of suggested keywords, a request id ***rid***, a ***status*** (generally always "SUCCESS"), the calling lat and long (if provided), and the ***ttl*** or time-to-live for the set in seconds (if the calling code is caching).
+##Sample Response
 
-The ***records*** section is an array of ***suggestion*** items, each with a count of cards ***cardCount*** and an ***id*** for the unique suggestion.  Suggestions also have a ***suggRank*** which is the preferred ranking of the suggestion.
+The response will be the json payload of the suggestions and cards.  
+
+The ***_meta*** section returns information about the entire set of suggestions (count of suggested keywords, a request id ***rid***, a ***status*** (generally always "SUCCESS"),  and the ***ttl*** or time-to-live for the set in seconds (if the calling code is caching).
+
+The ***records*** section is an array of ***suggestion*** items, each with a count of cards ***cardCount*** and an ***id*** for the unique suggestion.  Suggestions also have a ***suggRank*** which is the required rank of the suggestion.
 
 Each card has a ***rank*** (suggested display order), a ***card_format*** which is the size and orientation of the card, a unique ***id***, up to 4 different images for the cards, based on the size/density wanted (x1 to x4), each with the image height and width, and an array of ***actions*** which describe the destinations for clicks (taps) on the cards -- can be a deep link, a web or mobile URL.  
 
-If ***tracking*** is set to 1 in the call, then a ***card_click_url*** and a ***card_impression_url*** are provided for each card -- the client should call these URLs for the respective card events.
+For each card there is a ***card_click_url*** and a ***card_impression_url*** -- the client should call these URLs (GET) for the respective card events (i.e. when the card image is displayed, and when a user taps on the card).
 
 ```json
 {
     "_meta": {
         "count": 2,
-        "latitude": "32.79317",
-        "longitude": "-115.55478",
         "rid": 0,
         "status": "SUCCESS",
         "ttl": 0
