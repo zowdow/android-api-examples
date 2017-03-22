@@ -23,7 +23,7 @@ import com.zowdow.direct_api.ZowdowDirectApplication;
 import com.zowdow.direct_api.network.models.unified.ActionModel;
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 import com.zowdow.direct_api.network.models.unified.suggestions.Suggestion;
-import com.zowdow.direct_api.tracking.TrackHelper;
+import com.zowdow.direct_api.tracking.TrackingRequestManager;
 import com.zowdow.direct_api.ui.VideoActivity;
 import com.zowdow.direct_api.ui.views.CardImageView;
 import com.zowdow.direct_api.utils.ViewUtils;
@@ -49,7 +49,8 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.CardViewHold
     private List<Card> cards;
     private OnCardClickListener cardClickListener;
 
-    @Inject TrackHelper trackHelper;
+    @Inject
+    TrackingRequestManager trackManager;
 
     private CardsAdapter() {
         ZowdowDirectApplication.getTrackingComponent().inject(this);
@@ -193,14 +194,14 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.CardViewHold
     }
 
     private void onWebContentCardClicked(String actionTarget, String clickUrl) {
-        trackHelper.trackClick(clickUrl);
+        trackManager.trackCardClick(clickUrl);
         if (cardClickListener != null && actionTarget != null) {
             cardClickListener.onCardClicked(actionTarget, currentSuggestion.getSuggestion());
         }
     }
 
     private void onVideoCardClicked(Context context, String actionTarget, String clickUrl) {
-        trackHelper.trackClick(clickUrl);
+        trackManager.trackCardClick(clickUrl);
         Intent intent = new Intent(context, VideoActivity.class);
         intent.putExtra(VideoActivity.EXTRA_VIDEO, actionTarget);
         context.startActivity(intent);

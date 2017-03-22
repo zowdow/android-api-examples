@@ -23,7 +23,7 @@ class CardImpressionInfo {
     private String cardId;
     private String impressionUrl;
     private boolean isTracked;
-    private TrackHelper trackHelper;
+    private TrackingRequestManager trackManager;
 
     private CardImpressionInfo(String cardId, String impressionUrl) {
         this.isTracked = false;
@@ -31,9 +31,9 @@ class CardImpressionInfo {
         this.impressionUrl = impressionUrl;
     }
 
-    CardImpressionInfo(String cardId, String impressionUrl, TrackHelper trackHelper) {
+    CardImpressionInfo(String cardId, String impressionUrl, TrackingRequestManager trackManager) {
         this(cardId, impressionUrl);
-        this.trackHelper = trackHelper;
+        this.trackManager = trackManager;
     }
 
     /**
@@ -51,7 +51,7 @@ class CardImpressionInfo {
             @Override
             public void onFinish() {
                 Log.d(TAG, "Firing timer event for card: " + cardId);
-                trackHelper.trackImpression(impressionUrl);
+                trackManager.trackCardImpression(impressionUrl);
                 isTracked = true;
                 timer = null;
             }

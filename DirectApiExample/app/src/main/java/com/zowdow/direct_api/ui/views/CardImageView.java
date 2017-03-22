@@ -7,7 +7,6 @@ import android.util.AttributeSet;
 import com.zowdow.direct_api.ZowdowDirectApplication;
 import com.zowdow.direct_api.network.models.unified.suggestions.Card;
 import com.zowdow.direct_api.tracking.CardImpressionTracker;
-import com.zowdow.direct_api.tracking.TrackHelper;
 
 import javax.inject.Inject;
 

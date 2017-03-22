@@ -20,12 +20,12 @@ import javax.inject.Singleton;
 @Singleton
 public class CardImpressionTracker {
     private Map<String, CardImpressionInfo> cardImpressionInfoMap;
-    private TrackHelper trackHelper;
+    private TrackingRequestManager trackManager;
 
     @Inject
-    public CardImpressionTracker(TrackHelper trackHelper) {
+    public CardImpressionTracker(TrackingRequestManager trackManager) {
         this.cardImpressionInfoMap = new HashMap<>();
-        this.trackHelper = trackHelper;
+        this.trackManager = trackManager;
     }
 
     /**
@@ -44,7 +44,7 @@ public class CardImpressionTracker {
         Map<String, CardImpressionInfo> allNewCardsMap = new HashMap<>();
         for (Card card : newCardsList) {
             String cardId = card.getId();
-            CardImpressionInfo cardImpressionInfo = new CardImpressionInfo(cardId, card.getImpressionUrl(), trackHelper);
+            CardImpressionInfo cardImpressionInfo = new CardImpressionInfo(cardId, card.getImpressionUrl(), trackManager);
             allNewCardsMap.put(cardId, cardImpressionInfo);
         }
 
