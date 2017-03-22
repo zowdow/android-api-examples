@@ -37,6 +37,7 @@ public class QueryUtils {
     private static final String MOCK_PACKAGE_NAME       = "com.zowdow.android.example";
 
     private static final Map<String, Object> sQueryMap = Collections.synchronizedMap(new HashMap<>());
+    private static String sUserAgent = "";
 
     private QueryUtils() {}
 
@@ -174,7 +175,10 @@ public class QueryUtils {
      * @return user agent string for ad call URL.
      */
     private static String getUserAgent(Context context) {
-        return new WebView(context).getSettings().getUserAgentString();
+        if (sUserAgent == null || sUserAgent.isEmpty()) {
+            sUserAgent = new WebView(context).getSettings().getUserAgentString();
+        }
+        return sUserAgent;
     }
 
     /**
