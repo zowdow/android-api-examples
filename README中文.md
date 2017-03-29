@@ -2,7 +2,11 @@
 
 © 2015-2017 Zowdow, Inc.
 
-此示例的目的是向Android开发者展示如何在无需SDK的情况下直接接入Zowdow API接口。
+Zowodow搜索推荐服务旨在向应用开发者提供在搜索场景下变现的可能性。
+
+很多合作伙伴正在使用我们提供的可靠的，轻量级的安卓SDK。同时我们也提供直接API接口以方便接入服务（此示例程序）。
+
+应用开发者需要一个app-id来集成和测试。可以发送邮箱至dev@zowdow.com申请app-id。
 
 ## 版本
 
@@ -21,6 +25,8 @@
 *   **network** 由Retrofit-service类（如上面介绍）和Entity类（代表搜索推荐，卡片和广告）构成。
 
 *   **ui** 被Activity类, adapters, 自定义视图和回调程序。程序工作流程中重要的活动是`HomeDemoActivity`。很多关键的事件比如搜索推荐加载都在这个类里发生。`WebViewActivity`和`VideoActivity`代表卡片的内容信息类型，可以是网页，也可以是视频。
+
+*   **tracking**负责记录与卡片有关的多种互动，例如卡片点击和卡片暴露。
 
 *   **utils** 包含常数，简单的地理位置信息获取，运行时间的权限检查，观察网络连接状态，调用参数集合等有用的信息。
 
@@ -90,9 +96,28 @@ https://u.zowdow.com/v1/
 
 我们用`clickUrl`和`impressionUrl`来进行卡片交互的追踪记录。只有在API调用里设置`tracking=1`才能看到这两项。
 
-`clickUrl`用于卡片点击，`impressionUrl`用于卡片展示。当用户点击卡片/卡片展示给用户时，必须调用这两个URL，否则无法得到准确的变现信息。
+`clickUrl`用于卡片点击，`impressionUrl`用于卡片暴露。当用户点击卡片/卡片暴露给用户时，必须调用这两个URL，否则无法得到准确的变现信息。
 
-卡片展示事件在`CardImageView`类中处理。
+卡片暴露事件在`CardImageView`类中处理。
+
+**卡片暴露记录**
+
+如果在您的程序中用到这个示例程序，在记录卡片暴露时需要特别注意。我们使用MRC标准来记录卡片暴露，即只有至少50%的卡片面积暴露时间超过1秒时才记录。同时当同一张卡片出现在两个连续的请求中时，计时器不应被中断。我们创建了一个类来简化这个过程，方便在您的程序中使用。
+
+下面是卡片暴露记录类的结构图。
+
+![Class Diagram](ImpressionsTrackingUML.png)
+
+您应该用`CardImpressionsTracker`类来记录。
+
+1. 当API返回新的数据，调用`setNewCardsData`方法传递新的卡片（指定关键词的所有搜索推荐的所有卡片）。
+2. 对所有至少50%面积暴露的卡片，调用`cardShown`方法。
+3. 对所有当前不暴露的卡片或者暴露面积小于50%的卡片，调用`cardHidden`方法。每当卡片从暴露变为不暴露也需要调用。
+4. 每当发生改变卡片暴露面积的事件时（比如界面滑动或者设备朝向改变），对所有发生暴露面积改变的卡片，相应地调用`cardShown`和`cardHidden`方法。
+
+您可以参考`SuggestionViewHolder`类的`trackVisibleCard`方法来实现卡片暴露与否状态观察。在我们的示例中，每当获取新的卡片数据时和水平方向垂直方向滑动时，我们都会调用这个方法。
+
+`CardImpressionsTracker`会负责同一个卡片出现在连续请求的例子。每个`CardImpressionInfo`实例包含了它所代表的卡片的暴露情况以及由`cardShown`和`cardHidden`方法管理的计时器。一旦计时器结束，卡片暴露会被立刻记录。卡片暴露记录由`TrackingRequestManager`的`trackCardImpression`方法完成。`TrackingRequestManager`是一个声明了基本的卡片记录行为的接口。这些行为可以在实现了这个接口的任意类中根据现有的程序结构改变。
 
 ## 联系方式
 
