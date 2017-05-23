@@ -5,7 +5,7 @@
 搜索推荐API的终端为：
 
 ```
-u.zowdow.com/v1/unified
+https://u.zowdow.com/v1.1/unified
 ```
 
 API包含很多用来控制搜索推荐及卡片返回内容的参数。
@@ -23,6 +23,9 @@ API包含很多用来控制搜索推荐及卡片返回内容的参数。
 |***app_id***|Zowdow分配给您应用的唯一标识符|用来筛选特定的内容，国家，卡片形式|
 |***q***|查询的片段、字、词|返回的搜索推荐与这些片段、字、词有关|
 |***device_id***|IDFA(iOS)/Advertiser ID或Android ID(Android)|为特定的用户定制内容，以及提供定位到设备的广告|
+|***ua***|卡片点击后用来打开页面的浏览器的User Agent|变现需要|
+|***lat***|设备所在的纬度（十进制）|用来提供本地化内容以及变现|
+|***long***|设备所在的经度（十进制）|用来提供本地化内容以及变现|
 
 ###推荐的参数
 
@@ -34,8 +37,6 @@ API包含很多用来控制搜索推荐及卡片返回内容的参数。
 |***network***|网络环境（3g/4g/lte/wifi）|用来内容定位|
 |***locale***|设备区域语言码|用来设置卡片内容的语言偏好|
 |***timezone***|时区码|用来进行跟时间段（早上/下午/晚上）相关的卡片时间的计算|
-|***lat***|客户端所在的纬度坐标|用来返回本地化的内容|
-|***long***|客户端所在的经度坐标|用来返回本地化的内容|
 |***location_accuracy***|经纬度精确度，以米为单位|用来本地化内容定位|
 
 ###记录参数
@@ -64,7 +65,7 @@ API包含很多用来控制搜索推荐及卡片返回内容的参数。
 用curl命令测试的调用示例以及返回数据：
 
 ```json
-curl -XGET 'http://u.zowdow.com/v1/unified?app_id=com.zowdow.android.example&q=black&device_id=8de95467-1570-45bf-9732-178f3f80d3e6&os=Android&device_model=HUAWEI+VIE-L09&system_ver=6.0&network=wifi&locale=en_US&timezone=EDT&lat=32.79317&lon=-115.55478&location_accuracy=100&s_limit=2&c_limit=1'
+curl -XGET 'http://u.zowdow.com/v1.1/unified?app_id=com.zowdow.android.example&q=black&device_id=8de95467-1570-45bf-9732-178f3f80d3e6&os=Android&device_model=HUAWEI+VIE-L09&system_ver=6.0&network=wifi&locale=en_US&timezone=EDT&lat=32.79317&lon=-115.55478&location_accuracy=100&s_limit=2&c_limit=1&ua=SAMSUNG-GT-B5310%2FB5310ACIK1+SHP%2FVPP%2FR5+Dolfin%2F1.5+Nextreaming+SMM-MMS%2F1.2.0+profile%2FMIDP-2.1+configuration%2FCLDC-1.1'
 ```
 
 ##返回数据示例
@@ -75,103 +76,66 @@ curl -XGET 'http://u.zowdow.com/v1/unified?app_id=com.zowdow.android.example&q=b
 
 每一个卡片都包含***rank*** - 推荐显示顺序，***card_format*** - 大小及方向（水平或垂直），***id*** - 唯一性的卡片识别码，以及最多四张不同分辨率的卡片图片（基于大小/像素密度需求，从1倍分辨率到4倍，每张卡片图片包含了图片高度和宽度），以及***actions*** - 一组卡片行为，用来描述点击卡片触发的行为（可以是deep link，也可以是桌面端或者移动端的网址）。
 
-每个卡片会包含一个***card_click_url***键和一个***card_impression_url***键，客户端应该在相应的事件（比如卡片显示在屏幕上，用户点击卡片）调用这两个URL（GET操作）。
+每个卡片会包含一组***card_click_urls***和一组***card_impression_urls***，客户端应该在相应的事件（比如卡片显示在屏幕上，用户点击卡片）调用这两个URL（GET操作）。对于impression URL，客户端应当遵照IAB标准来同时调用符合要求的URL，即：
+
+***50%的卡片面积暴露至少1秒***
+
+对于click URL，每当卡片被点击时就需要调用URL。
 
 ```json
 {
     "_meta": {
-        "count": 2,
-        "rid": 0,
+        "count": 1,
+        "rid": "6e082ca3-861b-4dd0-cd0e-9640f55739aa",
         "status": "SUCCESS",
         "ttl": 0
     },
     "records": [
         {
+            "suggCount": 0,
             "suggestion": {
                 "cardCount": 1,
                 "cards": [
                     {
                         "actions": [
                             {
-                                "action_target": "https://play.spotify.com/track/4xpa5zw0GsYI40h1BjZy59",
+                                "action_target": "https://play.spotify.com/artist/2P3cjUru4H3fhSXXNxE9kA",
                                 "action_type": "web_url"
                             },
                             {
-                                "action_target": "spotify:track:4xpa5zw0GsYI40h1BjZy59",
+                                "action_target": "spotify:artist:2P3cjUru4H3fhSXXNxE9kA",
                                 "action_type": "deep_link"
-                            },
-                            {
-                                "action_target": "https://p.scdn.co/mp3-preview/559bbbca082f9a6a707fa4a4b2fb425cb5f804ef?cid=null",
-                                "action_type": "music_preview"
                             }
                         ],
                         "cardRank": 1,
-                        "card_click_url": "https://u1.quick1y.com/r/c/dcb6c6fe1d352ce539fc1a1ed8e9c7b5edb55691d11569feb47f6a9e7f50aca716109e9ca468e97890ce2f56fd547a64735f69c18f136a579bc2ffef408acac4",
+                        "card_click_urls": [
+                        "https://u4.zowdow.com/r/c/d8f9f1c7cd8fe919d51337500d5afa3a199d0ceaf9b1b7cca2934a4cc9f847683e63dc5b0d53bdc1d0c85387624c5e97db82ee35c86ba646fb538ee59f15ca39",
+                        "https://we.re.zowdow.com/cd8fe919d51337500d5afa3a199d0ceaf9b1b7cca2934a4cc9f847683e63dc5b0d53bdc1d0c85387624c5e97db82ee35c86ba646fb538ee59f15ca39"
+                        ],
                         "card_format": "inline",
-                        "card_impression_url": "https://u1.quick1y.com/r/i/25a335a01c0e1c4e284a7217761802f50a63b02523a417b8c2d885a12ffd6cd1b2595c048e0058f9ff5a3cc4f4905b037a37424aaa781f29a2d204db02a66c5e",
-                        "id": "spotifytrack4xpa5zw0GsYI40h1BjZy59",
-                        "x1": "http://d1jh24layu79ld.cloudfront.net/spotifytrack/071216/f/FA85_inline_spotify_track_4xpa5zw0GsYI40h1BjZy59_1481140187975_x1.jpeg",
+                        "card_impression_urls": [ 
+                          "https://u4.zowdow.com/r/i/cfdc230fad421357d10a414220087fb199df8874b236f71f658b71c6728dfb857913480393acb89a9382fa7bc35d3cfba2c9ef6d29dc02d73e1601d20504670b",
+                          "https://we.re.zowdow.com/7d10a414220087fb199df8874b236f71f658b71c6728dfb857913480393acb89a9382fa7bc35d3cfba2c9ef6d29dc02d73e1601d20504670b"
+                        ],
+                        "id": "inline_spotify_artist_2P3cjUru4H3fhSXXNxE9kA",
+                        "x1": "http://d1jh24layu79ld.cloudfront.net/spotifyartist/111116/5/0d79_inline_spotify_artist_2P3cjUru4H3fhSXXNxE9kA_1478825093491_x1.jpeg",
                         "x1_h": 40,
                         "x1_w": 170,
-                        "x2": "http://d1jh24layu79ld.cloudfront.net/spotifytrack/071216/f/FA85_inline_spotify_track_4xpa5zw0GsYI40h1BjZy59_1481140187975_x2.jpeg",
+                        "x2": "http://d1jh24layu79ld.cloudfront.net/spotifyartist/111116/5/0d79_inline_spotify_artist_2P3cjUru4H3fhSXXNxE9kA_1478825093491_x2.jpeg",
                         "x2_h": 80,
                         "x2_w": 340,
-                        "x3": "http://d1jh24layu79ld.cloudfront.net/spotifytrack/071216/f/FA85_inline_spotify_track_4xpa5zw0GsYI40h1BjZy59_1481140187975_x3.jpeg",
+                        "x3": "http://d1jh24layu79ld.cloudfront.net/spotifyartist/111116/5/0d79_inline_spotify_artist_2P3cjUru4H3fhSXXNxE9kA_1478825093491_x3.jpeg",
                         "x3_h": 106,
                         "x3_w": 453,
-                        "x4": "http://d1jh24layu79ld.cloudfront.net/spotifytrack/071216/f/FA85_inline_spotify_track_4xpa5zw0GsYI40h1BjZy59_1481140187975_x4.jpeg",
+                        "x4": "http://d1jh24layu79ld.cloudfront.net/spotifyartist/111116/5/0d79_inline_spotify_artist_2P3cjUru4H3fhSXXNxE9kA_1478825093491_x4.jpeg",
                         "x4_h": 160,
                         "x4_w": 680
                     }
                 ],
-                "id": 6508341,
+                "id": 7382091,
                 "queryFragment": "black",
                 "suggRank": 0,
-                "suggestion": "Black Knight Satellite - Single Version"
-            }
-        },
-        {
-            "suggestion": {
-                "cardCount": 1,
-                "cards": [
-                    {
-                        "actions": [
-                            {
-                                "action_target": "https://play.spotify.com/track/1VFiqRE4rjmvrSQMnVWN3a",
-                                "action_type": "web_url"
-                            },
-                            {
-                                "action_target": "spotify:track:1VFiqRE4rjmvrSQMnVWN3a",
-                                "action_type": "deep_link"
-                            },
-                            {
-                                "action_target": "https://p.scdn.co/mp3-preview/04dff1bf0ffecebe90280e33775830a06f3f195d?cid=null",
-                                "action_type": "music_preview"
-                            }
-                        ],
-                        "cardRank": 1,
-                        "card_click_url": "https://u1.quick1y.com/r/c/6aa2f193f8c3eca6def021dc555402e0daafc7e2f7304acaf022ae3be033121ea620aaa60a4ec37b18f1b93de3f6d85a7db27ccde6bbc1349b6a434ca5a40621",
-                        "card_format": "inline",
-                        "card_impression_url": "https://u1.quick1y.com/r/i/07f2911a0cefb62403f4269a838c9950344e6b243abb7213e04eb2b4fc8d4f448d86968b07f0653cd12ba4af80956942a6c076971e3fb741f7473a5670cd3eb3",
-                        "id": "spotifytrack1VFiqRE4rjmvrSQMnVWN3a",
-                        "x1": "http://d1jh24layu79ld.cloudfront.net/spotifytrack/071216/d/a8B8_inline_spotify_track_1VFiqRE4rjmvrSQMnVWN3a_1481139250929_x1.jpeg",
-                        "x1_h": 40,
-                        "x1_w": 170,
-                        "x2": "http://d1jh24layu79ld.cloudfront.net/spotifytrack/071216/d/a8B8_inline_spotify_track_1VFiqRE4rjmvrSQMnVWN3a_1481139250929_x2.jpeg",
-                        "x2_h": 80,
-                        "x2_w": 340,
-                        "x3": "http://d1jh24layu79ld.cloudfront.net/spotifytrack/071216/d/a8B8_inline_spotify_track_1VFiqRE4rjmvrSQMnVWN3a_1481139250929_x3.jpeg",
-                        "x3_h": 106,
-                        "x3_w": 453,
-                        "x4": "http://d1jh24layu79ld.cloudfront.net/spotifytrack/071216/d/a8B8_inline_spotify_track_1VFiqRE4rjmvrSQMnVWN3a_1481139250929_x4.jpeg",
-                        "x4_h": 160,
-                        "x4_w": 680
-                    }
-                ],
-                "id": 6511658,
-                "queryFragment": "black",
-                "suggRank": 1,
-                "suggestion": "Black Sails 2017 (Extended edit)"
+                "suggestion": "blackstreet"
             }
         }
     ]
@@ -194,7 +158,11 @@ curl -XGET 'http://u.zowdow.com/v1/unified?app_id=com.zowdow.android.example&q=b
     "records": []
 }
 ```
-### 简单的授权
+### 授权
 
 授权机制基于***app_id***。
 只有有效的***app_id***会返回结果。
+
+App ID由Zowdow生成，作为产品介绍的一部分。
+
+一个app_id只能用在一个操作系统上，如果API用户的产品发布在多个平台上，那么每个操作系统上的版本都有一个不同的app_id。
