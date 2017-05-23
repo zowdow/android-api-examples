@@ -58,11 +58,35 @@ https://u.zowdow.com/v1/
 
 All API endpoints constants are available in `network/ApiBaseUrls` interface.
 
-**Consuming Unified API**
+**Consuming Zowdow API**
 
-The example of network call to Unified API may be found in `HomeDemoActivity` class.
+The example of network call to Zowdow API may be found in `HomeDemoActivity` class.
 
-This method retrieves suggestions response and converts its' contents into
+It is important to collect all necessary parameters common for the API calls to Zowdow. The entry point for this 
+inside `HomeDemoActivity` is the `retrieveApiParams()` method which refers to another static method 
+in `QueryUtils` class called `getQueryMapObservable` which returns the observable of request parameters map.
+
+Please, note that it's essential to include the **user-agent** value to the parameters map.
+In our example it is performed in the first line of getQueryMapObservable
+
+```java
+sQueryMap.put(USER_AGENT, getUserAgent(context));
+```
+
+within `getUserAgent` method call, which basically returns the UA:
+
+```java
+private static String getUserAgent(Context context) {
+    if (sUserAgent == null || sUserAgent.isEmpty()) {
+        sUserAgent = new WebView(context).getSettings().getUserAgentString();
+    }
+    return sUserAgent;
+}
+```
+
+Consider calling this method on the UI-thread as it is done in our example!
+
+The method below called `findSuggestions` retrieves suggestions response and converts its contents into
 the list full of cards with the parameters we need to render cards in the suggestion carousels (lists).
 If the server response is successful we are switching to the UI thread and passing retrieved and processed suggestions
 into suggestions list view's adapter.
