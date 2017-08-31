@@ -3,6 +3,8 @@ package com.zowdow.direct_api.tracking;
 import android.os.CountDownTimer;
 import android.util.Log;
 
+import java.util.List;
+
 /**
  * Class represents the entity associated to each specific card in a current suggestions response
  * for a given keyword, which stores card's current impression tracking state.
@@ -21,17 +23,17 @@ class CardImpressionInfo {
 
     private CountDownTimer timer;
     private String cardId;
-    private String impressionUrl;
+    private List<String> impressionUrl;
     private boolean isTracked;
     private TrackingRequestManager trackManager;
 
-    private CardImpressionInfo(String cardId, String impressionUrl) {
+    private CardImpressionInfo(String cardId, List<String> impressionUrl) {
         this.isTracked = false;
         this.cardId = cardId;
         this.impressionUrl = impressionUrl;
     }
 
-    CardImpressionInfo(String cardId, String impressionUrl, TrackingRequestManager trackManager) {
+    CardImpressionInfo(String cardId, List<String> impressionUrl, TrackingRequestManager trackManager) {
         this(cardId, impressionUrl);
         this.trackManager = trackManager;
     }

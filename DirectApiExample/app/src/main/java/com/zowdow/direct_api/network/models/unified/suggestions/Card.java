@@ -13,6 +13,7 @@ import com.zowdow.direct_api.network.models.unified.ActionModel;
 import com.zowdow.direct_api.network.models.unified.Schedule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -54,8 +55,8 @@ public class Card implements Parcelable {
     @SerializedName("actions") private      List<ActionModel>     mActions;
     private                                 boolean             mTracked;
     private                                 boolean             mGif;
-    @SerializedName("card_impression_url")  private String      mImpressionUrl;
-    @SerializedName("card_click_url")       private String      mClickUrl;
+    @SerializedName("card_impression_url")  private List<String>      mImpressionUrl;
+    @SerializedName("card_click_url")       private List<String>      mClickUrl;
     @SerializedName("lat")                  private Double      mLatitude;
     @SerializedName("long")                 private Double      mLongitude;
     @SerializedName("dist")                 private Double      mDistance;
@@ -512,19 +513,19 @@ public class Card implements Parcelable {
         mActions = actions;
     }
 
-    public String getImpressionUrl() {
+    public List<String> getImpressionUrl() {
         return mImpressionUrl;
     }
 
-    public void setImpressionUrl(String impressionUrl) {
+    public void setImpressionUrl(List<String> impressionUrl) {
         this.mImpressionUrl = impressionUrl;
     }
 
-    public String getClickUrl() {
+    public List<String> getClickUrl() {
         return mClickUrl;
     }
 
-    public void setClickUrl(String clickUrl) {
+    public void setClickUrl(List<String> clickUrl) {
         this.mClickUrl = clickUrl;
     }
 
@@ -584,8 +585,8 @@ public class Card implements Parcelable {
         }
         dest.writeInt(mCardRank);
         dest.writeString(mCardFormat);
-        dest.writeString(mClickUrl);
-        dest.writeString(mImpressionUrl);
+        dest.writeStringList(mClickUrl);
+        dest.writeStringList(mImpressionUrl);
         JsonArray actions = new JsonArray();
         for (ActionModel action : mActions) {
             JsonObject jsonAction = new JsonObject();
@@ -647,8 +648,8 @@ public class Card implements Parcelable {
         mD2w = source.readInt();
         mCardRank = source.readInt();
         mCardFormat = source.readString();
-        mImpressionUrl = source.readString();
-        mClickUrl = source.readString();
+        source.readStringList(mClickUrl);
+        source.readStringList(mImpressionUrl);
         mActions = new ArrayList<>();
         JsonArray actions = new JsonParser().parse(source.readString()).getAsJsonArray();
         for (JsonElement jsonElement : actions) {

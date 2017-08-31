@@ -2,12 +2,18 @@ package com.zowdow.direct_api.tracking;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.util.Pair;
 
 import com.zowdow.direct_api.network.services.UnifiedApiService;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -26,21 +32,23 @@ public class TrackingRequestManagerImpl implements TrackingRequestManager {
     }
 
     @Override
-    public void trackCardImpression(@NonNull final String impressionUrl) {
-        unifiedApiService.performTracking(impressionUrl)
+    public void trackCardImpression(@NonNull final List<String> impressionUrl) {
+        Observable.fromIterable(impressionUrl)
+                .map(url -> new Pair<>(url, unifiedApiService.performTracking(url)))
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        () -> Log.d(TAG, "Tracked impression successfully: " + impressionUrl),
+                        pair -> Log.d(TAG, "Tracked impression successfully: " + pair.first),
                         Throwable::printStackTrace
                 );
     }
 
     @Override
-    public void trackCardClick(@NonNull final String clickUrl) {
-        unifiedApiService.performTracking(clickUrl)
+    public void trackCardClick(@NonNull final List<String> clickUrl) {
+        Observable.fromIterable(clickUrl)
+                .map(url -> new Pair<>(url, unifiedApiService.performTracking(url)))
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        () -> Log.d(TAG, "Tracked click successfully: " + clickUrl),
+                        pair -> Log.d(TAG, "Tracked click successfully: " + pair.first),
                         Throwable::printStackTrace
                 );
     }

@@ -2,6 +2,8 @@ package com.zowdow.direct_api.tracking;
 
 import android.support.annotation.NonNull;
 
+import java.util.List;
+
 /**
  * The interface which defines basic methods essential for cards tracking events such as
  * impressions and clicks.
@@ -19,12 +21,12 @@ public interface TrackingRequestManager {
      *
      * @param impressionUrl
      */
-    void trackCardImpression(@NonNull final String impressionUrl);
+    void trackCardImpression(@NonNull final List<String> impressionUrl);
 
     /**
      * This method should be invoked as soon as the card gets clicked.
      *
      * @param clickUrl
      */
-    void trackCardClick(@NonNull final String clickUrl);
+    void trackCardClick(@NonNull final List<String> clickUrl);
 }

@@ -193,14 +193,14 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.CardViewHold
         }
     }
 
-    private void onWebContentCardClicked(String actionTarget, String clickUrl) {
+    private void onWebContentCardClicked(String actionTarget, List<String> clickUrl) {
         trackManager.trackCardClick(clickUrl);
         if (cardClickListener != null && actionTarget != null) {
             cardClickListener.onCardClicked(actionTarget, currentSuggestion.getSuggestion());
         }
     }
 
-    private void onVideoCardClicked(Context context, String actionTarget, String clickUrl) {
+    private void onVideoCardClicked(Context context, String actionTarget, List<String> clickUrl) {
         trackManager.trackCardClick(clickUrl);
         Intent intent = new Intent(context, VideoActivity.class);
         intent.putExtra(VideoActivity.EXTRA_VIDEO, actionTarget);
