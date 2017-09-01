@@ -53,7 +53,7 @@ We implemented `UnifiedApiService` which works with Unified API & some tracking 
 **Base URL for this API**
 
 ```
-https://u.zowdow.com/v1/
+https://u.zowdow.com/v1.1/
 ```
 
 All API endpoints constants are available in `network/ApiBaseUrls` interface.
@@ -139,7 +139,7 @@ All card formats are declared in the interface `utils/constants/CardFormats`.
 
 # Tracking
 
-We use `clickUrl` and `impressionUrl` field values for cards interaction tracking. These fields are returned when you pass `tracking=1` in the query parameter call to the API.
+We use `clickUrls` and `impressionUrls` field values for cards interaction tracking. These fields are List<String>, so you should track each URL in the list. These fields are returned when you pass `tracking=1` in the query parameter call to the API. 
 
 The first one for click events, and the another one is for card appearance events. These URLs must be called during a click or an impression event in order for accurate tracking for monetization.
 
